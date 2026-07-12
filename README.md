@@ -4,6 +4,8 @@ A macOS video compression app inspired by [ImageOptim](https://imageoptim.com). 
 
 Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing via drag-and-drop or folder scanning. Audio is untouched.
 
+**[VideoOptim github.io page](https://segovia-no.github.io/VideoOptim/)**
+
 ---
 
 ## Features
@@ -142,6 +144,10 @@ VideoOptim/
 ```
 
 ---
+
+## Contributing
+
+Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
 
 ## License
 

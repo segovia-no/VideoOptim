@@ -4,7 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VideoOptim — H.265 video compression for macOS</title>
-<meta name="description" content="A macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out.">
+<meta name="description" content="A free macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out. Supports MP4, MOV, MKV, AVI and WebM.">
+<meta name="keywords" content="video compression, H.265, HEVC, ffmpeg, macOS, Apple Silicon, batch video encoder, libx265, VideoToolbox">
+<meta name="author" content="Diego Segovia">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://segovia-no.github.io/VideoOptim/">
+
+<!-- Open Graph -->
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://segovia-no.github.io/VideoOptim/">
+<meta property="og:title"       content="VideoOptim — H.265 video compression for macOS">
+<meta property="og:description" content="A free macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out.">
+<meta property="og:image"       content="https://segovia-no.github.io/VideoOptim/assets/VideoOptimScreenshot.webp">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "VideoOptim",
+  "operatingSystem": "macOS",
+  "applicationCategory": "MultimediaApplication",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "A macOS app that re-encodes videos to H.265 using ffmpeg. Supports MP4, MOV, MKV, AVI and WebM.",
+  "url": "https://segovia-no.github.io/VideoOptim/",
+  "downloadUrl": "https://github.com/segovia-no/VideoOptim/releases/latest",
+  "author": { "@type": "Person", "name": "Diego Segovia" }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -447,14 +475,14 @@ footer a:hover { color: var(--ink); }
     <span class="logo-glyph">⇣</span>VideoOptim
   </a>
   <ul class="navlinks">
-    <li><a href="#features">features</a></li>
-    <li><a href="#how">how it works</a></li>
+    <li><a href="#home">home</a></li>
+    <li><a href="getting-started.html">getting started</a></li>
     <li><a href="https://github.com/segovia-no/VideoOptim">github ↗</a></li>
   </ul>
 </nav>
 
 <!-- Hero -->
-<div class="section hero">
+<div class="section hero" id="home">
   <div>
     <div class="eyebrow-row">
       <span class="eyebrow">macOS · H.265 · ffmpeg</span>
