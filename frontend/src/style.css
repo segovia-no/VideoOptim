@@ -1,0 +1,100 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+
+#app {
+    height: 100%;
+}
+
+button {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* ── Theme tokens ─────────────────────────────────────── */
+:root {
+    --bg:                 #f6f6f6;
+    --bg-content:         #ffffff;
+    --bg-toolbar:         #f0f0f0;
+    --bg-header:          #f5f5f5;
+    --bg-row:             #ffffff;
+    --bg-row-processing:  #f0f7ff;
+    --bg-row-hover:       #fafafa;
+    --bg-modal:           #ffffff;
+    --bg-overlay:         rgba(0,0,0,0.25);
+    --bg-btn:             #ffffff;
+    --bg-btn-hover:       #f0f0f0;
+    --bg-chip:            #ffffff;
+
+    --border:             #d8d8d8;
+    --border-row:         #ebebeb;
+    --border-btn:         #cccccc;
+
+    --text-primary:       #1a1a1a;
+    --text-secondary:     #666666;
+    --text-muted:         #aaaaaa;
+    --text-placeholder:   #cccccc;
+    --text-btn:           #333333;
+
+    --accent:             #007aff;
+    --accent-hover:       #0066dd;
+    --green:              #34c759;
+    --red:                #ff3b30;
+    --orange:             #ff9500;
+    --warning-bg:         #fffbe6;
+    --warning-border:     #ffe58f;
+    --warning-text:       #7a5f00;
+
+    --spinner-track:      #e0e0e0;
+    --spinner-head:       #007aff;
+    --progress-track:     #e0e0e0;
+    --progress-fill:      #34c759;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:                 #1c1c1e;
+        --bg-content:         #1c1c1e;
+        --bg-toolbar:         #2c2c2e;
+        --bg-header:          #2c2c2e;
+        --bg-row:             #1c1c1e;
+        --bg-row-processing:  #1c2535;
+        --bg-row-hover:       #242426;
+        --bg-modal:           #2c2c2e;
+        --bg-overlay:         rgba(0,0,0,0.5);
+        --bg-btn:             #3a3a3c;
+        --bg-btn-hover:       #48484a;
+        --bg-chip:            #3a3a3c;
+
+        --border:             #3a3a3c;
+        --border-row:         #2c2c2e;
+        --border-btn:         #48484a;
+
+        --text-primary:       #f2f2f7;
+        --text-secondary:     #aeaeb2;
+        --text-muted:         #636366;
+        --text-placeholder:   #3a3a3c;
+        --text-btn:           #f2f2f7;
+
+        --accent:             #0a84ff;
+        --accent-hover:       #409cff;
+        --green:              #30d158;
+        --red:                #ff453a;
+        --orange:             #ff9f0a;
+        --warning-bg:         #2c2400;
+        --warning-border:     #5a4500;
+        --warning-text:       #ffd60a;
+
+        --spinner-track:      #3a3a3c;
+        --spinner-head:       #0a84ff;
+        --progress-track:     #3a3a3c;
+        --progress-fill:      #30d158;
+    }
+}

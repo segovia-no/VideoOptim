@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "VideoOptim",
+  "outputfilename": "VideoOptim",
+  "frontend:install": "make install",
+  "frontend:build": "make build",
+  "frontend:dev:watcher": "make dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Diego Segovia",
+    "email": "dsegoviaolivares@gmail.com"
+  }
+}
