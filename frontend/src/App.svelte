@@ -1,78 +1,30 @@
 <script>
     import { onMount } from 'svelte'
-    import { EventsOn } from '../wailsjs/runtime/runtime.js'
-    import { AddFiles, Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker, PauseQueue, ResumeQueue, StopQueue } from '../wailsjs/go/main/App.js'
+    import { Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker, AddFiles, PauseQueue, ResumeQueue, StopQueue } from '../wailsjs/go/main/App.js'
     import FileList from './components/FileList.svelte'
     import Settings from './components/Settings.svelte'
-    import { jobs, ffmpegMissing, upsertJob, updateJob, hasCompleted, hasDone, hasActive } from './stores/queue.js'
+    import DragDropZone from './components/DragDropZone.svelte'
+    import { jobs, ffmpegMissing, upsertJob, hasCompleted, hasDone, hasActive, stats, showSummary } from './stores/queue.js'
     import { formatBytes } from './utils/format.js'
+    import { setupEvents } from './utils/events.js'
 
     let isPaused = $state(false)
     let showSettings = $state(false)
     let showAbout = $state(false)
     let showCleanupConfirm = $state(false)
-    let dropping = $state(false)
     let cleanupResult = $state(null)
     let cleanupTimer = null
-
-    let doneJobs     = $derived($jobs.filter(j => j.status === 'done'))
-    let skippedCount = $derived($jobs.filter(j => j.status === 'skipped').length)
-    let errorCount   = $derived($jobs.filter(j => j.status === 'error').length)
-    let totalOrigBytes = $derived(doneJobs.reduce((s, j) => s + (j.originalSize || 0), 0))
-    let totalOutBytes  = $derived(doneJobs.reduce((s, j) => s + (j.outputSize  || 0), 0))
-    let reduction      = $derived(totalOrigBytes > 0 ? (1 - totalOutBytes / totalOrigBytes) * 100 : 0)
-    let showSummary    = $derived(!$hasActive && $jobs.length > 0 && $hasCompleted)
 
     $effect(() => { if (!$hasActive) isPaused = false })
 
     onMount(() => {
-        let dropTimer = null
-        let pendingPaths = new Set()
-        EventsOn('wails:file-drop', (_x, _y, paths) => {
-            dropping = false
-            if (paths && paths.length > 0) {
-                paths.forEach(p => pendingPaths.add(p))
-                clearTimeout(dropTimer)
-                dropTimer = setTimeout(() => {
-                    const batch = [...pendingPaths]
-                    pendingPaths.clear()
-                    AddFiles(batch).then(newJobs => {
-                        if (newJobs) newJobs.forEach(j => upsertJob(j))
-                    })
-                }, 50)
-            }
+        setupEvents({
+            onSettings: () => showSettings = true,
+            onAbout:    () => showAbout = true,
+            onOpen:     () => openPicker(),
+            onFolder:   () => openFolder(),
+            onClear:    () => clearAll(),
         })
-
-        EventsOn('menu:settings', () => showSettings = true)
-        EventsOn('menu:about',    () => showAbout = true)
-        EventsOn('menu:open',        () => openPicker())
-        EventsOn('menu:open-folder', () => openFolder())
-        EventsOn('menu:clear',    () => clearAll())
-
-        EventsOn('ffmpeg:missing', (data) => ffmpegMissing.set(data))
-        EventsOn('job:start',    (data) => updateJob(data.id, { status: 'processing', progress: 0 }))
-        EventsOn('job:progress', (data) => updateJob(data.id, { progress: data.percent, elapsed: data.elapsed, fps: data.fps }))
-        EventsOn('job:complete', (data) => {
-            const hasOutput = !!data.outputPath
-            const savings = hasOutput && data.outputSize < data.originalSize
-                ? (1 - data.outputSize / data.originalSize) * 100 : 0
-            updateJob(data.id, {
-                status: hasOutput ? 'done' : 'skipped',
-                progress: 100, outputPath: data.outputPath,
-                originalSize: data.originalSize, outputSize: data.outputSize, savings,
-                skipReason: data.skipReason || null,
-            })
-        })
-        EventsOn('job:error', (data) => updateJob(data.id, { status: 'error', error: data.message }))
-
-        const onDragEnter = () => { dropping = true }
-        const onDragLeave = (e) => { if (!e.relatedTarget) dropping = false }
-        window.addEventListener('dragenter', onDragEnter)
-        window.addEventListener('dragleave', onDragLeave)
-        return () => {
-            window.removeEventListener('dragenter', onDragEnter)
-            window.removeEventListener('dragleave', onDragLeave)
-        }
     })
 
     async function openFolder() {
@@ -121,7 +73,7 @@
     }
 </script>
 
-<div class="app" class:dropping>
+<DragDropZone>
 
     <!-- ffmpeg missing banner -->
     {#if $ffmpegMissing}
@@ -162,25 +114,25 @@
     </div>
 
     <!-- Summary bar -->
-    {#if showSummary}
+    {#if $showSummary}
     <div class="summary-bar">
         <div class="summary-counts">
-            <span class="sum-done">{doneJobs.length} transcoded</span>
+            <span class="sum-done">{$stats.doneCount} transcoded</span>
             <span class="sum-sep">·</span>
-            <span class="sum-skip">{skippedCount} skipped</span>
-            {#if errorCount > 0}
+            <span class="sum-skip">{$stats.skippedCount} skipped</span>
+            {#if $stats.errorCount > 0}
                 <span class="sum-sep">·</span>
-                <span class="sum-error">{errorCount} failed</span>
+                <span class="sum-error">{$stats.errorCount} failed</span>
             {/if}
             <span class="sum-sep">·</span>
             <span class="sum-total">{$jobs.length} total</span>
         </div>
-        {#if totalOrigBytes > 0}
+        {#if $stats.totalOrigBytes > 0}
         <div class="summary-sizes">
-            <span class="sum-orig">{formatBytes(totalOrigBytes)}</span>
+            <span class="sum-orig">{formatBytes($stats.totalOrigBytes)}</span>
             <span class="sum-arrow">→</span>
-            <span class="sum-out">{formatBytes(totalOutBytes)}</span>
-            <span class="sum-pct">·&nbsp;{reduction.toFixed(1)}% smaller</span>
+            <span class="sum-out">{formatBytes($stats.totalOutBytes)}</span>
+            <span class="sum-pct">·&nbsp;{$stats.reduction.toFixed(1)}% smaller</span>
         </div>
         {/if}
     </div>
@@ -196,7 +148,7 @@
             {#if $hasActive}
                 <span class="toolbar-spinner"></span>
                 <span class="toolbar-progress">
-                    Transcoded {$jobs.filter(j => j.status === 'done').length} of {$jobs.length} videos
+                    Transcoded {$stats.doneCount} of {$jobs.length} videos
                 </span>
             {/if}
         </div>
@@ -221,13 +173,6 @@
             </button>
         </div>
     </div>
-
-    <!-- Drop overlay -->
-    {#if dropping}
-        <div class="drop-overlay">
-            <span class="drop-overlay-label">Drop to compress</span>
-        </div>
-    {/if}
 
     {#if showCleanupConfirm}
         <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -266,20 +211,9 @@
     {#if showSettings}
         <Settings onClose={() => showSettings = false} />
     {/if}
-</div>
+</DragDropZone>
 
 <style>
-    .app {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        background: var(--bg);
-        position: relative;
-        overflow: hidden;
-        font-family: var(--font-sans);
-        color: var(--ink);
-    }
-
     /* Warning banner */
     .warning-banner {
         background: var(--warning-bg);
@@ -459,26 +393,6 @@
 
     .cleanup-feedback {
         font: 400 12px var(--font-mono);
-        color: var(--accent);
-    }
-
-    /* Drop overlay */
-    .drop-overlay {
-        position: absolute;
-        inset: 0 0 44px 0;
-        background: var(--accent-dim);
-        border: 2px dashed var(--accent-line);
-        margin: 8px;
-        border-radius: var(--radius-xl);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        z-index: 50;
-    }
-
-    .drop-overlay-label {
-        font: 600 18px var(--font-sans);
         color: var(--accent);
     }
 

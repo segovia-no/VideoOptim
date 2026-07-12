@@ -27,13 +27,23 @@ func (d *Detector) Probe(path string) (*VideoInfo, error) {
 	// ffmpeg -i with no output prints stream info to stderr and exits non-zero.
 	cmd := exec.Command(d.FFmpegPath, "-i", path)
 	out, _ := cmd.CombinedOutput()
-	text := string(out)
 
-	info := &VideoInfo{}
+	info, err := parseProbeText(string(out))
+	if err != nil {
+		return nil, fmt.Errorf("ffmpeg probe: no video stream in %s", path)
+	}
 
 	if fi, err := os.Stat(path); err == nil {
 		info.Size = fi.Size()
 	}
+
+	return info, nil
+}
+
+// parseProbeText parses the combined output of ffmpeg -i and extracts video
+// stream metadata. Pure function — no filesystem or process access.
+func parseProbeText(text string) (*VideoInfo, error) {
+	info := &VideoInfo{}
 
 	if m := reDuration.FindStringSubmatch(text); m != nil {
 		h, _ := strconv.ParseFloat(m[1], 64)
@@ -57,7 +67,7 @@ func (d *Detector) Probe(path string) (*VideoInfo, error) {
 	}
 
 	if info.Codec == "" {
-		return nil, fmt.Errorf("ffmpeg probe: no video stream in %s", path)
+		return nil, fmt.Errorf("no video stream found")
 	}
 
 	return info, nil
