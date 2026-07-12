@@ -1,12 +1,13 @@
 <script>
     import { onMount } from 'svelte'
     import { EventsOn } from '../wailsjs/runtime/runtime.js'
-    import { AddFiles, Cleanup, ClearCompleted, OpenFilePicker } from '../wailsjs/go/main/App.js'
+    import { AddFiles, Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker } from '../wailsjs/go/main/App.js'
     import FileList from './components/FileList.svelte'
     import Settings from './components/Settings.svelte'
     import { jobs, ffmpegMissing, upsertJob, updateJob, hasCompleted, hasDone, hasActive } from './stores/queue.js'
 
     let showSettings = $state(false)
+    let showAbout = $state(false)
     let showCleanupConfirm = $state(false)
     let dropping = $state(false)
     let cleanupResult = $state(null)
@@ -45,6 +46,12 @@
             }
         })
 
+        EventsOn('menu:settings', () => showSettings = true)
+        EventsOn('menu:about',    () => showAbout = true)
+        EventsOn('menu:open',        () => openPicker())
+        EventsOn('menu:open-folder', () => openFolder())
+        EventsOn('menu:clear',    () => clearAll())
+
         EventsOn('ffmpeg:missing', (data) => ffmpegMissing.set(data))
         EventsOn('job:start',    (data) => updateJob(data.id, { status: 'processing', progress: 0 }))
         EventsOn('job:progress', (data) => updateJob(data.id, { progress: data.percent, elapsed: data.elapsed, fps: data.fps }))
@@ -70,6 +77,14 @@
             window.removeEventListener('dragleave', onDragLeave)
         }
     })
+
+    async function openFolder() {
+        const path = await OpenFolderPicker()
+        if (path) {
+            const newJobs = await AddFiles([path])
+            if (newJobs) newJobs.forEach(j => upsertJob(j))
+        }
+    }
 
     async function openPicker() {
         const paths = await OpenFilePicker()
@@ -111,7 +126,10 @@
                     <path d="M26 16v20M18 28l8 8 8-8" stroke="var(--text-placeholder)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <p class="drop-hint">Drop videos or folders here</p>
-                <button class="btn-open" onclick={openPicker}>Choose files…</button>
+                <div class="drop-actions">
+                    <button class="btn-open" onclick={openPicker}>Choose files…</button>
+                    <button class="btn-open btn-open-secondary" onclick={openFolder}>Choose folder…</button>
+                </div>
             </div>
         {:else}
             <FileList />
@@ -147,7 +165,8 @@
     <div class="toolbar">
         <div class="toolbar-left">
             {#if $jobs.length > 0}
-                <button class="btn-sm btn-muted" onclick={openPicker}>Add more…</button>
+                <button class="btn-sm btn-muted" onclick={openPicker}>Add files…</button>
+                <button class="btn-sm btn-muted" onclick={openFolder}>Add folder…</button>
             {/if}
             {#if $hasActive}
                 <span class="toolbar-spinner"></span>
@@ -198,6 +217,22 @@
                 <div class="confirm-actions">
                     <button class="confirm-cancel" onclick={() => showCleanupConfirm = false}>Cancel</button>
                     <button class="confirm-ok" onclick={runCleanup}>Move to Trash</button>
+                </div>
+            </div>
+        </div>
+    {/if}
+
+    {#if showAbout}
+        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+        <div class="confirm-overlay" onclick={() => showAbout = false}>
+            <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+            <div class="confirm-dialog about-dialog" onclick={(e) => e.stopPropagation()}>
+                <p class="about-name">VideoOptim</p>
+                <p class="about-version">Version 0.1</p>
+                <p class="about-desc">Video compression for macOS.<br>Powered by ffmpeg + HEVC.</p>
+                <p class="about-author">Diego Segovia @ 2026</p>
+                <div class="confirm-actions">
+                    <button class="confirm-ok" onclick={() => showAbout = false}>OK</button>
                 </div>
             </div>
         </div>
@@ -279,6 +314,9 @@
     }
 
     .btn-open:hover { background: var(--bg-btn-hover); }
+
+    .drop-actions { display: flex; gap: 8px; }
+    .btn-open-secondary { color: var(--text-muted); }
 
     /* Bottom toolbar */
     .toolbar {
@@ -474,4 +512,9 @@
     }
 
     .confirm-ok:hover { opacity: 0.88; }
+
+    .about-dialog { text-align: center; width: 280px; padding: 28px 24px 20px; }
+    .about-name    { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .about-version, .about-author { margin: 0 0 12px; font-size: 12px; color: var(--text-muted); }
+    .about-desc    { margin: 0 0 20px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
 </style>

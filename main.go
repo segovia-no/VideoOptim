@@ -4,6 +4,7 @@ import (
 	"embed"
 
 	"github.com/wailsapp/wails/v2"
+	
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
@@ -15,7 +16,10 @@ var assets embed.FS
 func main() {
 	app := NewApp()
 
+	appMenu := generateMenuItems(app)
+
 	err := wails.Run(&options.App{
+		Menu: appMenu,
 		Title:     "VideoOptim",
 		Width:     760,
 		Height:    540,
@@ -45,7 +49,7 @@ func main() {
 			Appearance: mac.DefaultAppearance,
 			About: &mac.AboutInfo{
 				Title:   "VideoOptim",
-				Message: "© 2026 VideoOptim\nVideo compression for macOS",
+				Message: "2026 Diego Segovia\nVideo compression for macOS",
 			},
 		},
 	})

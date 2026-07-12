@@ -149,6 +149,17 @@ func (a *App) OpenFilePicker() []string {
 	return paths
 }
 
+// OpenFolderPicker opens a native folder dialog and returns the selected path.
+func (a *App) OpenFolderPicker() string {
+	path, err := wailsRuntime.OpenDirectoryDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+		Title: "Select Folder",
+	})
+	if err != nil || path == "" {
+		return ""
+	}
+	return path
+}
+
 // RevealInFinder reveals the file in macOS Finder.
 func (a *App) RevealInFinder(path string) error {
 	return exec.Command("open", "-R", path).Run()

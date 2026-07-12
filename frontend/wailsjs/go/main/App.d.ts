@@ -22,6 +22,8 @@ export function OpenFile(arg1:string):Promise<void>;
 
 export function OpenFilePicker():Promise<Array<string>>;
 
+export function OpenFolderPicker():Promise<string>;
+
 export function RevealInFinder(arg1:string):Promise<void>;
 
 export function SaveSettings(arg1:settings.Settings):Promise<void>;

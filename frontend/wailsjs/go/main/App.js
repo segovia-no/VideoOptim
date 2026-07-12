@@ -38,6 +38,10 @@ export function OpenFilePicker() {
   return window['go']['main']['App']['OpenFilePicker']();
 }
 
+export function OpenFolderPicker() {
+  return window['go']['main']['App']['OpenFolderPicker']();
+}
+
 export function RevealInFinder(arg1) {
   return window['go']['main']['App']['RevealInFinder'](arg1);
 }
