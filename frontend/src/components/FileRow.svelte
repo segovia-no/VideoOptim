@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte'
     import { RevealInFinder, OpenFile, MoveToTrash } from '../../wailsjs/go/main/App.js'
-    import { updateJob, openMenuId } from '../stores/queue.js'
+    import { openMenuId } from '../stores/queue.js'
+    import { formatBytes } from '../utils/format.js'
 
     let { job } = $props()
 
@@ -43,14 +44,7 @@
     async function deleteOriginal(e) {
         e.stopPropagation()
         closeMenu()
-        const err = await MoveToTrash(job.path)
-        if (!err) updateJob(job.id, { originalDeleted: true })
-    }
-
-    function formatBytes(bytes) {
-        if (!bytes) return '—'
-        const mb = bytes / 1048576
-        return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`
+        await MoveToTrash(job.id, job.path)
     }
 
     onMount(() => {
@@ -244,22 +238,8 @@
 
     .icon-warn:hover .warn-tip { display: block; }
 
-    .spinner {
-        display: inline-block;
-        width: 13px;
-        height: 13px;
-        border: 1.5px solid var(--line-2);
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 0.75s linear infinite;
-    }
-
-    .spinner-dim {
-        border-top-color: var(--ink-4);
-        opacity: 0.6;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 13px; height: 13px; }
+    .spinner-dim { border-top-color: var(--ink-4); opacity: 0.6; }
 
     /* Context menu */
     .menu {

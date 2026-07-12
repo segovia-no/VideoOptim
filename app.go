@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -190,10 +189,15 @@ func (a *App) OpenFile(path string) error {
 	return exec.Command("open", path).Run()
 }
 
-// MoveToTrash moves the file at path to the macOS Trash.
-func (a *App) MoveToTrash(path string) error {
-	script := fmt.Sprintf(`tell application "Finder" to delete POSIX file %q`, path)
-	return exec.Command("osascript", "-e", script).Run()
+// MoveToTrash moves the file at path to Trash and marks the job's original as deleted.
+func (a *App) MoveToTrash(jobID, path string) error {
+	if err := cleanup.MoveToTrash(path); err != nil {
+		return err
+	}
+	if a.q != nil {
+		a.q.MarkOriginalDeleted(jobID)
+	}
+	return nil
 }
 
 func expandPaths(paths []string, formats []string) []string {

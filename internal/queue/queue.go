@@ -108,6 +108,17 @@ func (q *Queue) Jobs() []*Job {
 	return out
 }
 
+func (q *Queue) MarkOriginalDeleted(id string) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for _, j := range q.jobs {
+		if j.ID == id {
+			j.OriginalDeleted = true
+			return
+		}
+	}
+}
+
 func (q *Queue) CancelCurrent() {
 	q.mu.Lock()
 	if q.cancelCurrent != nil {

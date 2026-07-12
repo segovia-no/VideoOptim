@@ -5,6 +5,7 @@
     import FileList from './components/FileList.svelte'
     import Settings from './components/Settings.svelte'
     import { jobs, ffmpegMissing, upsertJob, updateJob, hasCompleted, hasDone, hasActive } from './stores/queue.js'
+    import { formatBytes } from './utils/format.js'
 
     let isPaused = $state(false)
     let showSettings = $state(false)
@@ -23,13 +24,6 @@
     let showSummary    = $derived(!$hasActive && $jobs.length > 0 && $hasCompleted)
 
     $effect(() => { if (!$hasActive) isPaused = false })
-
-    function formatBytes(bytes) {
-        if (!bytes) return '—'
-        const gb = bytes / 1073741824
-        const mb = bytes / 1048576
-        return gb >= 1 ? `${gb.toFixed(2)} GB` : mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`
-    }
 
     onMount(() => {
         let dropTimer = null
@@ -239,7 +233,7 @@
         <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
         <div class="confirm-overlay" onclick={() => showCleanupConfirm = false}>
             <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-            <div class="confirm-dialog" onclick={(e) => e.stopPropagation()}>
+            <div class="confirm-dialog modal-shell" onclick={(e) => e.stopPropagation()}>
                 <p class="confirm-title">Move originals to Trash?</p>
                 <p class="confirm-body">
                     Original files with a smaller <code>_optimized</code> version will be moved to the Trash.
@@ -257,7 +251,7 @@
         <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
         <div class="confirm-overlay" onclick={() => showAbout = false}>
             <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-            <div class="confirm-dialog about-dialog" onclick={(e) => e.stopPropagation()}>
+            <div class="confirm-dialog about-dialog modal-shell" onclick={(e) => e.stopPropagation()}>
                 <p class="about-name">VideoOptim</p>
                 <p class="about-version">Version 0.2.0</p>
                 <p class="about-desc">Video compression for macOS.<br>Powered by ffmpeg + HEVC.</p>
@@ -453,17 +447,10 @@
     .sum-pct   { color: var(--accent); font-weight: 600; }
 
     .toolbar-spinner {
-        display: inline-block;
         width: 11px;
         height: 11px;
-        border: 1.5px solid var(--line-2);
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 0.75s linear infinite;
         flex-shrink: 0;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     .toolbar-progress {
         font: 400 11.5px var(--font-mono);
@@ -508,12 +495,8 @@
     }
 
     .confirm-dialog {
-        background: var(--bg-2);
-        border: 1px solid var(--line);
-        border-radius: var(--radius-2xl);
         padding: 24px 24px 20px;
         width: 360px;
-        box-shadow: var(--shadow-modal);
     }
 
     .confirm-title {

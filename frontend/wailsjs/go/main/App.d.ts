@@ -16,7 +16,7 @@ export function GetSettings():Promise<settings.Settings>;
 
 export function IsFFmpegAvailable():Promise<boolean>;
 
-export function MoveToTrash(arg1:string):Promise<void>;
+export function MoveToTrash(arg1:string,arg2:string):Promise<void>;
 
 export function OpenFile(arg1:string):Promise<void>;
 

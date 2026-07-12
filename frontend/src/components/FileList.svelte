@@ -5,7 +5,7 @@
 
 <div class="file-list">
     {#if $jobs.length > 0}
-        <div class="header-row">
+        <div class="header-row mono-label">
             <div class="col-name">File</div>
             <div class="col-orig">Original</div>
             <div class="col-output">Output</div>
@@ -36,10 +36,6 @@
         border-bottom: 1px solid var(--line);
         background: var(--bg-3);
         gap: 8px;
-        font: 500 10.5px var(--font-mono);
-        color: var(--ink-3);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
         position: sticky;
         top: 0;
         z-index: 1;

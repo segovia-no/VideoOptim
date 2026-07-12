@@ -35,6 +35,7 @@ export namespace queue {
 	    error?: string;
 	    outputPath?: string;
 	    skipReason?: string;
+	    originalDeleted?: boolean;
 	    // Go type: time
 	    addedAt: any;
 	
@@ -57,6 +58,7 @@ export namespace queue {
 	        this.error = source["error"];
 	        this.outputPath = source["outputPath"];
 	        this.skipReason = source["skipReason"];
+	        this.originalDeleted = source["originalDeleted"];
 	        this.addedAt = this.convertValues(source["addedAt"], null);
 	    }
 	

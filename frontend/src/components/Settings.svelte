@@ -34,7 +34,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="overlay" onclick={onClose}>
     <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <div class="modal modal-shell" onclick={(e) => e.stopPropagation()}>
         <h2>Settings</h2>
 
         <section>
@@ -112,12 +112,8 @@
     }
 
     .modal {
-        background: var(--bg-2);
-        border: 1px solid var(--line);
-        border-radius: var(--radius-2xl);
         padding: 24px;
         width: 400px;
-        box-shadow: var(--shadow-modal);
     }
 
     h2 {

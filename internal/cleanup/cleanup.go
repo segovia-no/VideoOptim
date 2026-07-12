@@ -67,7 +67,7 @@ func Run(pairs []Pair) Result {
 		}
 
 		if optInfo.Size() < origInfo.Size() {
-			if err := moveToTrash(p.Original); err != nil {
+			if err := MoveToTrash(p.Original); err != nil {
 				r.Errors = append(r.Errors, fmt.Sprintf("trash %s: %v", p.Original, err))
 			} else {
 				r.Moved++
@@ -83,7 +83,7 @@ func Run(pairs []Pair) Result {
 	return r
 }
 
-func moveToTrash(path string) error {
+func MoveToTrash(path string) error {
 	script := fmt.Sprintf(`tell application "Finder" to delete POSIX file %q`, path)
 	return exec.Command("osascript", "-e", script).Run()
 }
