@@ -78,7 +78,7 @@ $(FFMPEG_BIN)/ffmpeg:
 	  --enable-encoder=hevc_videotoolbox,libx265 \
 	  --enable-parser=h264,hevc,vp8,vp9,mpeg4video,aac,mpegaudio \
 	  --enable-bsf=hevc_mp4toannexb,h264_mp4toannexb,aac_adtstoasc \
-	  --enable-filter=null,anull \
+	  --enable-filter=null,anull,format,scale \
 	  --enable-avformat \
 	  --enable-avcodec \
 	  --enable-avutil \

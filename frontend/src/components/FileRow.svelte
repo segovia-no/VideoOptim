@@ -9,7 +9,6 @@
     let menuY = $state(0)
     let showMenu = $derived($openMenuId === job.id)
 
-    // Prefer optimized file for Reveal/Open when done
     let primaryPath = $derived(
         (job.status === 'done' && job.outputPath) ? job.outputPath : job.path
     )
@@ -54,24 +53,6 @@
         return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`
     }
 
-    function statusIcon(status) {
-        switch (status) {
-            case 'done':      return '✓'
-            case 'skipped':   return '—'
-            case 'error':     return '✕'
-            case 'cancelled': return '⊘'
-            default:          return '·'
-        }
-    }
-
-    function statusClass(status) {
-        switch (status) {
-            case 'done':  return 'icon-done'
-            case 'error': return 'icon-error'
-            default:      return 'icon-neutral'
-        }
-    }
-
     onMount(() => {
         const close = () => openMenuId.set(null)
         window.addEventListener('click', close)
@@ -84,38 +65,44 @@
     <div class="col-name">
         <span class="filename" title={job.path}>{job.filename}</span>
     </div>
-    <div class="col-orig">{formatBytes(job.originalSize)}</div>
+    <div class="col-orig num">{formatBytes(job.originalSize)}</div>
     <div class="col-output">
         {#if job.status === 'processing'}
-            <div class="progress-wrap">
-                <div class="progress-bar" style="width: {job.progress}%"></div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {job.progress}%"></div>
             </div>
-            <span class="progress-label">{Math.round(job.progress)}%</span>
-            <span class="elapsed">{job.elapsed || '0:00'}</span>
+            <span class="progress-pct num">{Math.round(job.progress)}%</span>
+            <span class="elapsed num">{job.elapsed || '0:00'}</span>
         {:else if job.status === 'done'}
-            <span class="output-size">{formatBytes(job.outputSize)}</span>
+            <span class="output-size num">{formatBytes(job.outputSize)}</span>
         {:else if job.status === 'error'}
-            <span class="error-msg" title={job.error}>Error</span>
+            <span class="error-val" title={job.error}>Error</span>
         {:else}
-            <span class="placeholder">—</span>
+            <span class="dim">—</span>
         {/if}
     </div>
     <div class="col-savings">
         {#if job.status === 'done'}
-            <span class="savings">−{job.savings.toFixed(1)}%</span>
+            <span class="savings-val num">−{job.savings.toFixed(1)}%</span>
         {:else if job.status === 'skipped' && !job.skipReason}
-            <span class="skipped-label">No gain</span>
+            <span class="no-gain">No gain</span>
         {:else}
-            <span class="placeholder">—</span>
+            <span class="dim">—</span>
         {/if}
     </div>
     <div class="col-status">
-        {#if job.status === 'processing' || job.status === 'waiting'}
-            <span class="spinner" class:spinner-dim={job.status === 'waiting'}></span>
+        {#if job.status === 'processing'}
+            <span class="spinner"></span>
+        {:else if job.status === 'waiting'}
+            <span class="spinner spinner-dim"></span>
         {:else if job.status === 'skipped' && job.skipReason === 'hevc'}
             <span class="icon-warn">⚠<span class="warn-tip">Already H.265 — re-encoding is unlikely to reduce file size</span></span>
+        {:else if job.status === 'done'}
+            <span class="icon-done">✓</span>
+        {:else if job.status === 'error'}
+            <span class="icon-error">✕</span>
         {:else}
-            <span class={statusClass(job.status)}>{statusIcon(job.status)}</span>
+            <span class="dim">·</span>
         {/if}
     </div>
 </div>
@@ -126,7 +113,7 @@
         <button class="menu-item" onclick={revealInFinder}>Reveal in Finder</button>
         <button class="menu-item" onclick={openFile}>Open file</button>
         {#if canDeleteOriginal}
-            <div class="menu-separator"></div>
+            <div class="menu-sep"></div>
             <button class="menu-item menu-danger" onclick={deleteOriginal}>Delete original</button>
         {/if}
     </div>
@@ -137,18 +124,18 @@
         display: flex;
         align-items: center;
         padding: 0 16px;
-        height: 40px;
-        border-bottom: 1px solid var(--border-row);
+        height: 42px;
+        border-bottom: 1px solid var(--line);
         gap: 8px;
-        font-size: 13px;
-        background: var(--bg-row);
+        background: var(--bg-2);
         cursor: pointer;
         user-select: none;
+        transition: background var(--dur-fast) var(--ease);
     }
 
     .row:last-child { border-bottom: none; }
-    .row:hover { background: var(--bg-row-hover); }
-    .row.processing { background: var(--bg-row-processing); }
+    .row:hover { background: var(--bg-3); }
+    .row.processing { background: var(--accent-dim); }
 
     .col-name {
         flex: 1;
@@ -161,79 +148,81 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        color: var(--text-primary);
+        font: 400 12.5px var(--font-mono);
+        color: var(--ink);
     }
+
+    .num { font-variant-numeric: tabular-nums; }
 
     .col-orig {
         width: 80px;
         text-align: right;
-        color: var(--text-secondary);
-        font-variant-numeric: tabular-nums;
+        font: 400 12.5px var(--font-mono);
+        color: var(--ink-2);
     }
 
     .col-output {
-        width: 170px;
+        width: 190px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
         gap: 6px;
-        font-variant-numeric: tabular-nums;
     }
 
     .col-savings {
-        width: 72px;
+        width: 76px;
         text-align: right;
-        font-variant-numeric: tabular-nums;
     }
 
     .col-status {
-        width: 22px;
+        width: 26px;
         text-align: center;
         flex-shrink: 0;
     }
 
-    .progress-wrap {
+    .progress-track {
         flex: 1;
         height: 5px;
-        background: var(--progress-track);
+        background: var(--line-2);
         border-radius: 3px;
         overflow: hidden;
     }
 
-    .progress-bar {
+    .progress-fill {
         height: 100%;
-        background: var(--progress-fill);
+        background: var(--accent);
         border-radius: 3px;
-        transition: width 0.25s ease;
+        transition: width 0.25s var(--ease);
     }
 
-    .progress-label {
-        font-size: 11px;
-        color: var(--text-secondary);
+    .progress-pct {
+        font: 400 11px var(--font-mono);
+        color: var(--ink-2);
         min-width: 28px;
         text-align: right;
     }
 
     .elapsed {
-        font-size: 11px;
-        color: var(--text-muted);
+        font: 400 11px var(--font-mono);
+        color: var(--ink-3);
         min-width: 30px;
         text-align: right;
     }
 
-    .savings      { color: var(--green); font-weight: 600; font-size: 13px; }
-    .skipped-label { color: var(--text-muted); font-size: 11px; }
-    .output-size  { color: var(--text-secondary); }
-    .error-msg    { color: var(--red); font-size: 11px; }
-    .placeholder  { color: var(--text-placeholder); }
+    .savings-val { color: var(--accent); font: 600 12.5px var(--font-mono); }
+    .no-gain     { font: 400 11px var(--font-mono); color: var(--ink-3); }
+    .output-size { font: 400 12.5px var(--font-mono); color: var(--ink-2); }
+    .error-val   { font: 500 11.5px var(--font-mono); color: var(--danger); }
+    .dim         { color: var(--ink-4); }
 
-    .icon-done    { color: var(--green); font-weight: 700; }
-    .icon-error   { color: var(--red); }
-    .icon-neutral { color: var(--text-placeholder); }
+    .icon-done  { color: var(--accent); font-weight: 700; font-size: 13px; }
+    .icon-error { color: var(--danger); font-size: 13px; }
+
     .icon-warn {
         position: relative;
-        color: var(--orange);
+        color: var(--seg);
         cursor: default;
+        font-size: 13px;
     }
 
     .warn-tip {
@@ -241,14 +230,14 @@
         position: absolute;
         bottom: calc(100% + 6px);
         right: 0;
-        background: var(--bg-modal);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 5px 8px;
-        font-size: 11px;
-        color: var(--text-secondary);
+        background: var(--bg-3);
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius-lg);
+        padding: 6px 9px;
+        font: 400 11px var(--font-sans);
+        color: var(--ink-2);
         white-space: nowrap;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: var(--shadow-menu);
         pointer-events: none;
         z-index: 400;
     }
@@ -259,27 +248,30 @@
         display: inline-block;
         width: 13px;
         height: 13px;
-        border: 2px solid var(--spinner-track);
-        border-top-color: var(--spinner-head);
+        border: 1.5px solid var(--line-2);
+        border-top-color: var(--accent);
         border-radius: 50%;
         animation: spin 0.75s linear infinite;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-dim {
+        border-top-color: var(--ink-4);
+        opacity: 0.6;
+    }
 
-    .spinner-dim { border-top-color: var(--text-muted); opacity: 0.5; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Context menu */
     .menu {
         position: fixed;
         z-index: 300;
-        background: var(--bg-modal);
-        border: 1px solid var(--border);
-        border-radius: 8px;
+        background: var(--bg-3);
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius-lg);
         padding: 4px;
         min-width: 190px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-menu);
+        backdrop-filter: blur(16px);
     }
 
     .menu-item {
@@ -288,22 +280,21 @@
         padding: 6px 10px;
         border: none;
         background: none;
-        font-size: 13px;
-        font-family: inherit;
-        color: var(--text-primary);
+        font: 400 13px var(--font-sans);
+        color: var(--ink);
         text-align: left;
         cursor: pointer;
-        border-radius: 5px;
+        border-radius: var(--radius-md);
     }
 
     .menu-item:hover { background: var(--accent); color: white; }
 
-    .menu-danger { color: var(--red); }
-    .menu-danger:hover { background: var(--red); color: white; }
+    .menu-danger { color: var(--danger); }
+    .menu-danger:hover { background: var(--danger); color: white; }
 
-    .menu-separator {
+    .menu-sep {
         height: 1px;
-        background: var(--border);
+        background: var(--line);
         margin: 4px 0;
     }
 </style>

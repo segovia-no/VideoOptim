@@ -24,6 +24,12 @@ export function OpenFilePicker():Promise<Array<string>>;
 
 export function OpenFolderPicker():Promise<string>;
 
+export function PauseQueue():Promise<void>;
+
+export function ResumeQueue():Promise<void>;
+
 export function RevealInFinder(arg1:string):Promise<void>;
 
 export function SaveSettings(arg1:settings.Settings):Promise<void>;
+
+export function StopQueue():Promise<void>;

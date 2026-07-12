@@ -32,23 +32,23 @@
         display: flex;
         align-items: center;
         padding: 0 16px;
-        height: 26px;
-        border-bottom: 1px solid var(--border);
-        background: var(--bg-header);
+        height: 30px;
+        border-bottom: 1px solid var(--line);
+        background: var(--bg-3);
         gap: 8px;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text-muted);
+        font: 500 10.5px var(--font-mono);
+        color: var(--ink-3);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.08em;
         position: sticky;
         top: 0;
         z-index: 1;
+        flex-shrink: 0;
     }
 
     .col-name    { flex: 1; }
     .col-orig    { width: 80px;  text-align: right; }
-    .col-output  { width: 170px; text-align: right; }
-    .col-savings { width: 72px;  text-align: right; }
-    .col-status  { width: 22px; }
+    .col-output  { width: 190px; text-align: right; }
+    .col-savings { width: 76px;  text-align: right; }
+    .col-status  { width: 26px; }
 </style>

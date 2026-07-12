@@ -129,6 +129,27 @@ func (a *App) ClearCompleted() {
 	}
 }
 
+// PauseQueue suspends the current encode via SIGSTOP.
+func (a *App) PauseQueue() {
+	if a.q != nil {
+		a.q.Pause()
+	}
+}
+
+// ResumeQueue resumes a suspended encode via SIGCONT.
+func (a *App) ResumeQueue() {
+	if a.q != nil {
+		a.q.Resume()
+	}
+}
+
+// StopQueue kills the current encode and stops the queue.
+func (a *App) StopQueue() {
+	if a.q != nil {
+		a.q.Stop()
+	}
+}
+
 // IsFFmpegAvailable returns whether ffmpeg was found on startup.
 func (a *App) IsFFmpegAvailable() bool {
 	return a.detector != nil
