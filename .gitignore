@@ -4,4 +4,4 @@ build/ffmpeg-prefix
 node_modules
 frontend/dist
 test.DS_Store
-test
+test**/.DS_Store
