@@ -16,17 +16,26 @@ Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing v
 - Supports MP4, MOV, MKV, AVI, WebM
 - Dark and light mode (follows system)
 
+## Installation
+
+Download `VideoOptim.dmg` from [Releases](../../releases), open it, drag the app to Applications.
+
+**First launch:** macOS may block the app since it isn't notarized. Right-click → Open to bypass, or run:
+```bash
+xattr -cr /Applications/VideoOptim.app
+```
+
 ## Requirements
 
-- macOS 12+
-- No runtime dependencies — ffmpeg and ffprobe are bundled inside the app
+- macOS 12+, Apple Silicon (M1 or later)
+- No runtime dependencies — ffmpeg is bundled inside the app
 
 ---
 
 ## Usage
 
 1. Launch VideoOptim
-2. Drop video files or folders onto the window (or click **Choose files…**)
+2. Drop video files or folders onto the window (or use **Add Files…** / **Add Folder…**)
 3. Compression runs automatically, one file at a time
 4. When done, click **Clean up originals** to move source files to Trash
 
@@ -39,15 +48,15 @@ holiday.mov  →  holiday_optimized.mp4
 
 ## Settings
 
-Open via the gear icon (bottom-right corner).
+Open via the gear icon or **VideoOptim → Settings** (⌘,).
 
 | Setting | Default | Notes |
 |---|---|---|
-| Encoder | hevc_videotoolbox | Hardware encoder, much faster (default on macOS) |
+| Encoder | hevc_videotoolbox | Hardware encoder, fastest |
 | — | libx265 | Software encoder, best compression ratio |
 | CRF | 24 | Quality level 18–35 (libx265 only) |
 | Keep audio | On | Copies audio stream without re-encoding |
-| Discard if no gain | On | Keep original when compressed file is larger |
+| Discard if no gain | On | Keeps original when compressed file is larger |
 | Accepted formats | All | Toggle which extensions are picked up |
 
 ---
@@ -79,7 +88,7 @@ Hot-reloads the frontend on save. Go changes require a restart.
 
 ### Production build
 
-The build pipeline compiles a minimal static ffmpeg/ffprobe (with `hevc_videotoolbox` + `libx265`) and bundles them inside the `.app`. No Homebrew runtime dependency for end users.
+The build pipeline compiles a minimal static ffmpeg (with `hevc_videotoolbox` + `libx265`) and bundles it inside the `.app`. No Homebrew runtime dependency for end users.
 
 **Prerequisites:** `brew install x265` (one-time, for the static build)
 
@@ -87,11 +96,11 @@ The build pipeline compiles a minimal static ffmpeg/ffprobe (with `hevc_videotoo
 # 1. Build bundled ffmpeg (one-time, ~5 min)
 make ffmpeg
 
-# 2. Build app + copy + codesign
-make app
+# 2. Build app + DMG
+make dmg
 ```
 
-Output: `build/bin/VideoOptim.app` (~20 MB, self-contained)
+Output: `build/bin/VideoOptim.dmg` (~6.5 MB), `build/bin/VideoOptim.app` (~14 MB, self-contained)
 
 ---
 
@@ -101,20 +110,18 @@ Output: `build/bin/VideoOptim.app` (~20 MB, self-contained)
 VideoOptim/
 ├── main.go                  # Wails app entry + window options
 ├── app.go                   # Go methods exposed to the frontend
+├── Makefile                 # ffmpeg build + app bundle + DMG
 ├── internal/
 │   ├── ffmpeg/              # Binary detection, video probe, encoder
 │   ├── queue/               # Sequential job runner
 │   ├── cleanup/             # Move originals to Trash
 │   └── settings/            # User preferences (JSON)
-├── frontend/
-│   └── src/
-│       ├── App.svelte        # Root layout, event wiring
-│       ├── stores/queue.js   # Shared job state
-│       └── components/       # FileList, FileRow, Settings
-└── docs/                    # Architecture and internals
+└── frontend/
+    └── src/
+        ├── App.svelte        # Root layout, event wiring
+        ├── stores/queue.js   # Shared job state
+        └── components/       # FileList, FileRow, Settings
 ```
-
-See [`docs/architecture.md`](docs/architecture.md) for a full breakdown.
 
 ---
 

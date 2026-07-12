@@ -7,19 +7,30 @@ BUILD_DIR    := $(CURDIR)/build
 FFMPEG_BIN   := $(BUILD_DIR)/ffmpeg
 APP_BUNDLE   := $(BUILD_DIR)/bin/VideoOptim.app
 APP_BIN      := $(APP_BUNDLE)/Contents/MacOS
+DMG_PATH     := $(BUILD_DIR)/bin/VideoOptim.dmg
 
-.PHONY: all app ffmpeg clean
+.PHONY: all app dmg ffmpeg clean
 
-all: app
+all: dmg
 
 # ── Full app build ────────────────────────────────────────────────────────────
 app: $(FFMPEG_BIN)/ffmpeg
-	~/go/bin/wails build -ldflags="-s -w"
+	~/go/bin/wails build -ldflags="-s -w" -platform darwin/arm64
 	rm -f $(APP_BIN)/ffprobe
 	install -m755 $(FFMPEG_BIN)/ffmpeg $(APP_BIN)/ffmpeg
 	codesign --force --sign - $(APP_BIN)/ffmpeg
 	codesign --force --sign - "$(APP_BUNDLE)"
 	@echo "==> Bundle: $$(du -sh '$(APP_BUNDLE)' | cut -f1)"
+
+# ── DMG ───────────────────────────────────────────────────────────────────────
+dmg: app
+	rm -f "$(DMG_PATH)"
+	hdiutil create \
+	  -volname "VideoOptim" \
+	  -srcfolder "$(APP_BUNDLE)" \
+	  -ov -format UDZO \
+	  "$(DMG_PATH)"
+	@echo "==> DMG: $$(du -sh '$(DMG_PATH)' | cut -f1)  →  $(DMG_PATH)"
 
 # ── ffmpeg ───────────────────────────────────────────────────────────────────
 ffmpeg: $(FFMPEG_BIN)/ffmpeg

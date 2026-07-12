@@ -1,4 +1,5 @@
 build/bin
+*.dmg
 build/ffmpeg
 build/ffmpeg-prefix
 node_modules
