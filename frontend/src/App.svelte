@@ -259,7 +259,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
             <div class="confirm-dialog about-dialog" onclick={(e) => e.stopPropagation()}>
                 <p class="about-name">VideoOptim</p>
-                <p class="about-version">Version 0.1</p>
+                <p class="about-version">Version 0.2.0</p>
                 <p class="about-desc">Video compression for macOS.<br>Powered by ffmpeg + HEVC.</p>
                 <p class="about-author">Diego Segovia @ 2026</p>
                 <div class="confirm-actions">
