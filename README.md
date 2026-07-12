@@ -2,6 +2,8 @@
 
 A macOS video compression app inspired by [ImageOptim](https://imageoptim.com). Drop videos in, get smaller videos out.
 
+It uses a very balanced configuration on ffmpeg that aims to only take advantages of H.265, preserving as much quality as possible. Audio is untouched.
+
 Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing via drag-and-drop or folder scanning.
 
 ---
