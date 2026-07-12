@@ -42,10 +42,22 @@ export function OpenFolderPicker() {
   return window['go']['main']['App']['OpenFolderPicker']();
 }
 
+export function PauseQueue() {
+  return window['go']['main']['App']['PauseQueue']();
+}
+
+export function ResumeQueue() {
+  return window['go']['main']['App']['ResumeQueue']();
+}
+
 export function RevealInFinder(arg1) {
   return window['go']['main']['App']['RevealInFinder'](arg1);
 }
 
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
+}
+
+export function StopQueue() {
+  return window['go']['main']['App']['StopQueue']();
 }

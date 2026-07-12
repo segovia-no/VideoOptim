@@ -37,6 +37,7 @@ func (d *Detector) Encode(
 	info *VideoInfo,
 	s settings.Settings,
 	onProgress func(ProgressUpdate),
+	onPid func(int),
 	cancelCh <-chan struct{},
 ) (*EncodeResult, error) {
 	outputPath := OutputPath(inputPath)
@@ -50,7 +51,10 @@ func (d *Detector) Encode(
 
 	switch s.Encoder {
 	case settings.EncoderHevcVideoToolbox:
-		args = append(args, "-c:v", "hevc_videotoolbox", "-q:v", "65")
+		args = append(args,
+			"-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p",
+			"-c:v", "hevc_videotoolbox", "-q:v", "65",
+		)
 	default:
 		args = append(args, "-c:v", "libx265", "-crf", strconv.Itoa(s.CRF))
 	}
@@ -75,6 +79,9 @@ func (d *Detector) Encode(
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("ffmpeg start: %w", err)
+	}
+	if onPid != nil {
+		onPid(cmd.Process.Pid)
 	}
 
 	start := time.Now()

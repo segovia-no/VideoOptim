@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 	"time"
 
 	"VideoOptim/internal/ffmpeg"
@@ -41,6 +42,9 @@ type Queue struct {
 	cancelCurrent chan struct{}
 	running       bool
 	startTimer    *time.Timer
+	currentPid    int
+	paused        bool
+	stopAll       bool
 }
 
 func New(
@@ -125,6 +129,42 @@ func (q *Queue) ClearCompleted() {
 	q.jobs = remaining
 }
 
+func (q *Queue) Pause() {
+	q.mu.Lock()
+	pid := q.currentPid
+	q.paused = true
+	q.mu.Unlock()
+	if pid > 0 {
+		if p, err := os.FindProcess(pid); err == nil {
+			p.Signal(syscall.SIGSTOP)
+		}
+	}
+}
+
+func (q *Queue) Resume() {
+	q.mu.Lock()
+	pid := q.currentPid
+	q.paused = false
+	q.mu.Unlock()
+	if pid > 0 {
+		if p, err := os.FindProcess(pid); err == nil {
+			p.Signal(syscall.SIGCONT)
+		}
+	}
+}
+
+func (q *Queue) Stop() {
+	q.mu.Lock()
+	q.stopAll = true
+	q.paused = false
+	ch := q.cancelCurrent
+	q.cancelCurrent = nil
+	q.mu.Unlock()
+	if ch != nil {
+		close(ch)
+	}
+}
+
 func (q *Queue) run() {
 	q.mu.Lock()
 	if q.running {
@@ -141,6 +181,13 @@ func (q *Queue) run() {
 	}()
 
 	for {
+		q.mu.Lock()
+		if q.stopAll {
+			q.stopAll = false
+			q.mu.Unlock()
+			return
+		}
+		q.mu.Unlock()
 		job := q.nextWaiting()
 		if job == nil {
 			return
@@ -209,8 +256,16 @@ func (q *Queue) process(job *Job) {
 			q.mu.Unlock()
 			q.onProgress(ProgressEvent{ID: job.ID, Update: u})
 		},
+		func(pid int) {
+			q.mu.Lock()
+			q.currentPid = pid
+			q.mu.Unlock()
+		},
 		cancelCh,
 	)
+	q.mu.Lock()
+	q.currentPid = 0
+	q.mu.Unlock()
 
 	if err != nil {
 		if err.Error() == "cancelled" {

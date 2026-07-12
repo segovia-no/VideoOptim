@@ -1,11 +1,12 @@
 <script>
     import { onMount } from 'svelte'
     import { EventsOn } from '../wailsjs/runtime/runtime.js'
-    import { AddFiles, Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker } from '../wailsjs/go/main/App.js'
+    import { AddFiles, Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker, PauseQueue, ResumeQueue, StopQueue } from '../wailsjs/go/main/App.js'
     import FileList from './components/FileList.svelte'
     import Settings from './components/Settings.svelte'
     import { jobs, ffmpegMissing, upsertJob, updateJob, hasCompleted, hasDone, hasActive } from './stores/queue.js'
 
+    let isPaused = $state(false)
     let showSettings = $state(false)
     let showAbout = $state(false)
     let showCleanupConfirm = $state(false)
@@ -20,6 +21,8 @@
     let totalOutBytes  = $derived(doneJobs.reduce((s, j) => s + (j.outputSize  || 0), 0))
     let reduction      = $derived(totalOrigBytes > 0 ? (1 - totalOutBytes / totalOrigBytes) * 100 : 0)
     let showSummary    = $derived(!$hasActive && $jobs.length > 0 && $hasCompleted)
+
+    $effect(() => { if (!$hasActive) isPaused = false })
 
     function formatBytes(bytes) {
         if (!bytes) return '—'
@@ -102,6 +105,22 @@
         cleanupTimer = setTimeout(() => cleanupResult = null, 4000)
     }
 
+    function pause() {
+        isPaused = true
+        PauseQueue()
+    }
+
+    function resume() {
+        isPaused = false
+        ResumeQueue()
+    }
+
+    function stop() {
+        isPaused = false
+        jobs.update(list => list.filter(j => j.status !== 'waiting' && j.status !== 'processing'))
+        StopQueue()
+    }
+
     function clearAll() {
         ClearCompleted()
         jobs.set([])
@@ -115,6 +134,18 @@
         <div class="warning-banner">
             <strong>ffmpeg not found.</strong> Run <code>brew install ffmpeg</code> then relaunch.
         </div>
+    {/if}
+
+    <!-- Queue controls -->
+    {#if $hasActive || isPaused}
+    <div class="control-bar">
+        {#if isPaused}
+            <button class="ctrl-btn ctrl-resume" onclick={resume}>▶ Resume</button>
+        {:else}
+            <button class="ctrl-btn ctrl-pause" onclick={pause}>⏸ Pause</button>
+        {/if}
+        <button class="ctrl-btn ctrl-stop" onclick={stop}>⏹ Stop</button>
+    </div>
     {/if}
 
     <!-- Main content -->
@@ -228,7 +259,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
             <div class="confirm-dialog about-dialog" onclick={(e) => e.stopPropagation()}>
                 <p class="about-name">VideoOptim</p>
-                <p class="about-version">Version 0.1</p>
+                <p class="about-version">Version 0.2.0</p>
                 <p class="about-desc">Video compression for macOS.<br>Powered by ffmpeg + HEVC.</p>
                 <p class="about-author">Diego Segovia @ 2026</p>
                 <div class="confirm-actions">
@@ -251,27 +282,53 @@
         background: var(--bg);
         position: relative;
         overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-        color: var(--text-primary);
+        font-family: var(--font-sans);
+        color: var(--ink);
     }
 
     /* Warning banner */
     .warning-banner {
         background: var(--warning-bg);
         border-bottom: 1px solid var(--warning-border);
-        padding: 7px 16px;
-        font-size: 12px;
+        padding: 8px 16px;
+        font: 400 12px var(--font-sans);
         color: var(--warning-text);
         flex-shrink: 0;
     }
 
     .warning-banner code {
-        background: rgba(0,0,0,0.1);
-        padding: 1px 5px;
-        border-radius: 3px;
-        font-family: "SF Mono", Menlo, monospace;
+        background: rgba(0,0,0,0.25);
+        padding: 1px 6px;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
         font-size: 11px;
     }
+
+    /* Control bar */
+    .control-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: var(--bg-3);
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+    }
+
+    .ctrl-btn {
+        font: 500 12px var(--font-mono);
+        padding: 4px 11px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line-2);
+        background: var(--bg-2);
+        color: var(--ink-2);
+        cursor: pointer;
+        transition: background var(--dur-fast) var(--ease);
+    }
+
+    .ctrl-btn:hover { background: var(--bg-btn-hover); }
+    .ctrl-resume { color: var(--accent); border-color: var(--accent-line); background: var(--accent-dim); }
+    .ctrl-stop   { color: var(--danger); }
 
     /* Content */
     .content {
@@ -289,44 +346,43 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 14px;
+        background: var(--bg-2);
     }
 
-    .drop-icon { margin-bottom: 4px; }
+    .drop-icon { color: var(--ink-4); margin-bottom: 4px; }
 
     .drop-hint {
         margin: 0;
-        font-size: 15px;
-        color: var(--text-muted);
+        font: 400 14px var(--font-sans);
+        color: var(--ink-3);
     }
 
     .btn-open {
-        margin-top: 4px;
-        padding: 7px 18px;
-        border-radius: 8px;
-        border: 1px solid var(--border-btn);
-        background: var(--bg-btn);
-        font-size: 13px;
+        padding: 6px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line-2);
+        background: var(--bg-3);
+        font: 500 12.5px var(--font-sans);
         cursor: pointer;
-        color: var(--text-btn);
-        font-family: inherit;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        color: var(--ink-2);
+        transition: background var(--dur-fast) var(--ease);
     }
 
     .btn-open:hover { background: var(--bg-btn-hover); }
 
     .drop-actions { display: flex; gap: 8px; }
-    .btn-open-secondary { color: var(--text-muted); }
+    .btn-open-secondary { color: var(--ink-3); }
 
     /* Bottom toolbar */
     .toolbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 36px;
-        padding: 0 8px;
-        background: var(--bg-toolbar);
-        border-top: 1px solid var(--border);
+        height: 44px;
+        padding: 0 12px;
+        background: var(--bg-3);
+        border-top: 1px solid var(--line);
         flex-shrink: 0;
     }
 
@@ -334,46 +390,46 @@
     .toolbar-right {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
     .btn-sm {
         padding: 3px 10px;
-        border-radius: 5px;
-        border: 1px solid var(--border-btn);
-        background: var(--bg-btn);
-        font-size: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line-2);
+        background: transparent;
+        font: 400 12px var(--font-sans);
         cursor: pointer;
-        color: var(--text-btn);
-        font-family: inherit;
+        color: var(--ink-2);
+        transition: background var(--dur-fast) var(--ease);
     }
 
     .btn-sm:hover { background: var(--bg-btn-hover); }
-    .btn-muted { color: var(--text-muted); }
+    .btn-muted { color: var(--ink-3); }
 
     .btn-icon {
         width: 28px;
         height: 28px;
-        border-radius: 6px;
+        border-radius: var(--radius-md);
         border: none;
         background: transparent;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-secondary);
+        color: var(--ink-2);
     }
 
-    .btn-icon:hover { background: var(--bg-btn-hover); }
+    .btn-icon:hover { background: var(--bg-2); }
 
     /* Summary bar */
     .summary-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 16px;
-        background: var(--bg-header);
-        border-top: 1px solid var(--border);
+        padding: 8px 16px;
+        background: var(--bg-3);
+        border-top: 1px solid var(--line);
         flex-shrink: 0;
         gap: 8px;
     }
@@ -381,27 +437,27 @@
     .summary-counts, .summary-sizes {
         display: flex;
         align-items: center;
-        gap: 5px;
-        font-size: 12px;
+        gap: 6px;
+        font: 400 12px var(--font-mono);
         font-variant-numeric: tabular-nums;
     }
 
-    .sum-done  { color: var(--green); font-weight: 600; }
-    .sum-skip  { color: var(--text-muted); }
-    .sum-error { color: var(--red); }
-    .sum-total { color: var(--text-secondary); }
-    .sum-sep   { color: var(--text-placeholder); }
-    .sum-orig  { color: var(--text-secondary); }
-    .sum-arrow { color: var(--text-secondary); }
-    .sum-out   { color: var(--green); font-weight: 600; }
-    .sum-pct   { color: var(--green); font-weight: 600; }
+    .sum-done  { color: var(--accent); font-weight: 600; }
+    .sum-skip  { color: var(--ink-3); }
+    .sum-error { color: var(--danger); }
+    .sum-total { color: var(--ink-2); }
+    .sum-sep   { color: var(--ink-4); }
+    .sum-orig  { color: var(--ink-2); }
+    .sum-arrow { color: var(--ink-3); }
+    .sum-out   { color: var(--accent); font-weight: 600; }
+    .sum-pct   { color: var(--accent); font-weight: 600; }
 
     .toolbar-spinner {
         display: inline-block;
         width: 11px;
         height: 11px;
-        border: 1.5px solid var(--spinner-track);
-        border-top-color: var(--spinner-head);
+        border: 1.5px solid var(--line-2);
+        border-top-color: var(--accent);
         border-radius: 50%;
         animation: spin 0.75s linear infinite;
         flex-shrink: 0;
@@ -410,23 +466,23 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .toolbar-progress {
-        font-size: 12px;
-        color: var(--text-muted);
+        font: 400 11.5px var(--font-mono);
+        color: var(--ink-3);
     }
 
     .cleanup-feedback {
-        font-size: 12px;
-        color: var(--green);
+        font: 400 12px var(--font-mono);
+        color: var(--accent);
     }
 
     /* Drop overlay */
     .drop-overlay {
         position: absolute;
-        inset: 0 0 36px 0;
-        background: color-mix(in srgb, var(--accent) 8%, transparent);
-        border: 2px dashed var(--accent);
+        inset: 0 0 44px 0;
+        background: var(--accent-dim);
+        border: 2px dashed var(--accent-line);
         margin: 8px;
-        border-radius: 10px;
+        border-radius: var(--radius-xl);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -435,12 +491,11 @@
     }
 
     .drop-overlay-label {
-        font-size: 18px;
-        font-weight: 600;
+        font: 600 18px var(--font-sans);
         color: var(--accent);
     }
 
-    /* Confirmation dialog */
+    /* Modals */
     .confirm-overlay {
         position: fixed;
         inset: 0;
@@ -449,37 +504,36 @@
         align-items: center;
         justify-content: center;
         z-index: 200;
+        backdrop-filter: blur(2px);
     }
 
     .confirm-dialog {
-        background: var(--bg-modal);
-        border: 1px solid var(--border);
-        border-radius: 12px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-2xl);
         padding: 24px 24px 20px;
-        width: 340px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        width: 360px;
+        box-shadow: var(--shadow-modal);
     }
 
     .confirm-title {
         margin: 0 0 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-primary);
+        font: 600 15px var(--font-sans);
+        color: var(--ink);
     }
 
     .confirm-body {
         margin: 0 0 20px;
-        font-size: 13px;
-        color: var(--text-secondary);
-        line-height: 1.5;
+        font: 400 13px/1.6 var(--font-sans);
+        color: var(--ink-2);
     }
 
     .confirm-body code {
-        font-family: "SF Mono", Menlo, monospace;
-        font-size: 11px;
-        background: var(--bg-btn);
-        padding: 1px 4px;
-        border-radius: 3px;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        background: var(--bg-3);
+        padding: 1px 5px;
+        border-radius: var(--radius-sm);
     }
 
     .confirm-actions {
@@ -490,31 +544,30 @@
 
     .confirm-cancel, .confirm-ok {
         padding: 6px 14px;
-        border-radius: 7px;
-        font-size: 13px;
-        font-family: inherit;
+        border-radius: var(--radius-md);
+        font: 500 13px var(--font-sans);
         cursor: pointer;
         border: none;
     }
 
     .confirm-cancel {
-        background: var(--bg-btn);
-        color: var(--text-btn);
-        border: 1px solid var(--border-btn);
+        background: var(--bg-3);
+        color: var(--ink-2);
+        border: 1px solid var(--line-2);
     }
 
     .confirm-cancel:hover { background: var(--bg-btn-hover); }
 
     .confirm-ok {
-        background: var(--red);
+        background: var(--danger);
         color: white;
-        font-weight: 500;
     }
 
     .confirm-ok:hover { opacity: 0.88; }
 
     .about-dialog { text-align: center; width: 280px; padding: 28px 24px 20px; }
-    .about-name    { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: var(--text-primary); }
-    .about-version, .about-author { margin: 0 0 12px; font-size: 12px; color: var(--text-muted); }
-    .about-desc    { margin: 0 0 20px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .about-name    { margin: 0 0 4px; font: 700 17px var(--font-sans); color: var(--ink); }
+    .about-version, .about-author { margin: 0 0 12px; font: 400 11.5px var(--font-mono); color: var(--ink-3); }
+    .about-desc    { margin: 0 0 20px; font: 400 12.5px/1.6 var(--font-sans); color: var(--ink-2); }
+    .about-dialog .confirm-ok { background: var(--accent); }
 </style>
