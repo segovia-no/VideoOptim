@@ -11,8 +11,7 @@ import (
 var ErrNotFound = errors.New("ffmpeg not found — bundle it via `make ffmpeg` or install with: brew install ffmpeg")
 
 type Detector struct {
-	FFmpegPath  string
-	FFprobePath string
+	FFmpegPath string
 }
 
 func Detect() (*Detector, error) {
@@ -20,11 +19,7 @@ func Detect() (*Detector, error) {
 	if ffmpegPath == "" {
 		return nil, ErrNotFound
 	}
-	ffprobePath := findBin("ffprobe")
-	if ffprobePath == "" {
-		return nil, ErrNotFound
-	}
-	return &Detector{FFmpegPath: ffmpegPath, FFprobePath: ffprobePath}, nil
+	return &Detector{FFmpegPath: ffmpegPath}, nil
 }
 
 // findBin checks alongside the running executable first (bundled .app),

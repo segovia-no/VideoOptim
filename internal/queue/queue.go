@@ -204,7 +204,7 @@ func (q *Queue) process(job *Job) {
 		func(u ffmpeg.ProgressUpdate) {
 			q.mu.Lock()
 			job.Progress = u.Percent
-			job.Elapsed = formatDuration(u.Elapsed)
+			job.Elapsed = FormatDuration(u.Elapsed)
 			job.FPS = u.FPS
 			q.mu.Unlock()
 			q.onProgress(ProgressEvent{ID: job.ID, Update: u})
@@ -249,7 +249,7 @@ func (q *Queue) setError(job *Job, err error) {
 	q.onError(ErrorEvent{ID: job.ID, Err: err})
 }
 
-func formatDuration(d time.Duration) string {
+func FormatDuration(d time.Duration) string {
 	d = d.Round(time.Second)
 	m := int(d.Minutes())
 	s := int(d.Seconds()) % 60

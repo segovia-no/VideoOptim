@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"VideoOptim/internal/cleanup"
 	"VideoOptim/internal/ffmpeg"
@@ -51,7 +50,7 @@ func (a *App) startup(ctx context.Context) {
 			wailsRuntime.EventsEmit(ctx, "job:progress", map[string]interface{}{
 				"id":      e.ID,
 				"percent": e.Update.Percent,
-				"elapsed": formatElapsed(e.Update.Elapsed),
+				"elapsed": queue.FormatDuration(e.Update.Elapsed),
 				"fps":     e.Update.FPS,
 			})
 		},
@@ -206,9 +205,3 @@ func expandPaths(paths []string, formats []string) []string {
 	return result
 }
 
-func formatElapsed(d time.Duration) string {
-	d = d.Round(time.Second)
-	m := int(d.Minutes())
-	s := int(d.Seconds()) % 60
-	return fmt.Sprintf("%d:%02d", m, s)
-}

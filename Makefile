@@ -13,19 +13,18 @@ APP_BIN      := $(APP_BUNDLE)/Contents/MacOS
 all: app
 
 # ── Full app build ────────────────────────────────────────────────────────────
-app: $(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe
+app: $(FFMPEG_BIN)/ffmpeg
 	~/go/bin/wails build -ldflags="-s -w"
-	install -m755 $(FFMPEG_BIN)/ffmpeg  $(APP_BIN)/ffmpeg
-	install -m755 $(FFMPEG_BIN)/ffprobe $(APP_BIN)/ffprobe
+	rm -f $(APP_BIN)/ffprobe
+	install -m755 $(FFMPEG_BIN)/ffmpeg $(APP_BIN)/ffmpeg
 	codesign --force --sign - $(APP_BIN)/ffmpeg
-	codesign --force --sign - $(APP_BIN)/ffprobe
 	codesign --force --sign - "$(APP_BUNDLE)"
 	@echo "==> Bundle: $$(du -sh '$(APP_BUNDLE)' | cut -f1)"
 
-# ── ffmpeg + ffprobe ──────────────────────────────────────────────────────────
-ffmpeg: $(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe
+# ── ffmpeg ───────────────────────────────────────────────────────────────────
+ffmpeg: $(FFMPEG_BIN)/ffmpeg
 
-$(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe:
+$(FFMPEG_BIN)/ffmpeg:
 	@[ -n "$(X265_PREFIX)" ] || { echo "ERROR: x265 not found. Run: brew install x265"; exit 1; }
 	@echo "==> Building ffmpeg $(FFMPEG_VER) (x265 from $(X265_PREFIX))..."
 	@set -euo pipefail; \
@@ -64,9 +63,9 @@ $(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe:
 	  --enable-protocol=file,pipe \
 	  --enable-demuxer=mov,matroska,avi \
 	  --enable-muxer=mp4 \
-	  --enable-decoder=h264,hevc,vp8,vp9,mpeg4video,prores,av1,aac,mp3,vorbis,opus,ac3 \
+	  --enable-decoder=h264,hevc,vp8,vp9,mpeg4video,prores,av1 \
 	  --enable-encoder=hevc_videotoolbox,libx265 \
-	  --enable-parser=h264,hevc,vp8,vp9,mpeg4video,aac,mpegaudio,vorbis,opus,ac3 \
+	  --enable-parser=h264,hevc,vp8,vp9,mpeg4video,aac,mpegaudio \
 	  --enable-bsf=hevc_mp4toannexb,h264_mp4toannexb,aac_adtstoasc \
 	  --enable-filter=null,anull \
 	  --enable-avformat \
@@ -75,8 +74,8 @@ $(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe:
 	  --enable-swscale \
 	  --enable-swresample && \
 	$(MAKE) -j$(NCPU) install
-	strip $(FFMPEG_BIN)/ffmpeg $(FFMPEG_BIN)/ffprobe
-	@echo "==> ffmpeg $$(du -sh $(FFMPEG_BIN)/ffmpeg | cut -f1)   ffprobe $$(du -sh $(FFMPEG_BIN)/ffprobe | cut -f1)"
+	strip $(FFMPEG_BIN)/ffmpeg
+	@echo "==> ffmpeg $$(du -sh $(FFMPEG_BIN)/ffmpeg | cut -f1)"
 
 clean:
 	rm -rf $(FFMPEG_BIN) $(BUILD_DIR)/ffmpeg-prefix

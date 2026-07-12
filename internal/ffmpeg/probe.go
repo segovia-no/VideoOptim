@@ -1,10 +1,12 @@
 package ffmpeg
 
 import (
-	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 type VideoInfo struct {
@@ -15,58 +17,47 @@ type VideoInfo struct {
 	Size     int64 // bytes
 }
 
-type probeOutput struct {
-	Streams []probeStream `json:"streams"`
-	Format  probeFormat  `json:"format"`
-}
-
-type probeStream struct {
-	CodecType string `json:"codec_type"`
-	CodecName string `json:"codec_name"`
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-	Duration  string `json:"duration"`
-}
-
-type probeFormat struct {
-	Duration string `json:"duration"`
-	Size     string `json:"size"`
-}
+var (
+	reDuration = regexp.MustCompile(`Duration:\s+(\d+):(\d+):(\d+(?:\.\d+)?)`)
+	reVideo    = regexp.MustCompile(`Video:\s+(\w+)`)
+	reDims     = regexp.MustCompile(`(\d{2,5})x(\d{2,5})`)
+)
 
 func (d *Detector) Probe(path string) (*VideoInfo, error) {
-	out, err := exec.Command(d.FFprobePath,
-		"-v", "quiet",
-		"-print_format", "json",
-		"-show_streams",
-		"-show_format",
-		path,
-	).Output()
-	if err != nil {
-		return nil, fmt.Errorf("ffprobe: %w", err)
-	}
-
-	var p probeOutput
-	if err := json.Unmarshal(out, &p); err != nil {
-		return nil, fmt.Errorf("ffprobe parse: %w", err)
-	}
+	// ffmpeg -i with no output prints stream info to stderr and exits non-zero.
+	cmd := exec.Command(d.FFmpegPath, "-i", path)
+	out, _ := cmd.CombinedOutput()
+	text := string(out)
 
 	info := &VideoInfo{}
-	dur, _ := strconv.ParseFloat(p.Format.Duration, 64)
-	info.Duration = dur
-	size, _ := strconv.ParseInt(p.Format.Size, 10, 64)
-	info.Size = size
 
-	for _, s := range p.Streams {
-		if s.CodecType == "video" {
-			info.Width = s.Width
-			info.Height = s.Height
-			info.Codec = s.CodecName
-			if info.Duration == 0 {
-				d, _ := strconv.ParseFloat(s.Duration, 64)
-				info.Duration = d
-			}
-			break
+	if fi, err := os.Stat(path); err == nil {
+		info.Size = fi.Size()
+	}
+
+	if m := reDuration.FindStringSubmatch(text); m != nil {
+		h, _ := strconv.ParseFloat(m[1], 64)
+		mn, _ := strconv.ParseFloat(m[2], 64)
+		s, _ := strconv.ParseFloat(m[3], 64)
+		info.Duration = h*3600 + mn*60 + s
+	}
+
+	for _, line := range strings.Split(text, "\n") {
+		if !strings.Contains(line, "Video:") {
+			continue
 		}
+		if m := reVideo.FindStringSubmatch(line); m != nil {
+			info.Codec = m[1]
+		}
+		if m := reDims.FindStringSubmatch(line); m != nil {
+			info.Width, _ = strconv.Atoi(m[1])
+			info.Height, _ = strconv.Atoi(m[2])
+		}
+		break
+	}
+
+	if info.Codec == "" {
+		return nil, fmt.Errorf("ffmpeg probe: no video stream in %s", path)
 	}
 
 	return info, nil
