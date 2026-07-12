@@ -19,11 +19,7 @@ Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing v
 ## Requirements
 
 - macOS 12+
-- [ffmpeg](https://ffmpeg.org) installed via Homebrew
-
-```bash
-brew install ffmpeg
-```
+- No runtime dependencies — ffmpeg and ffprobe are bundled inside the app
 
 ---
 
@@ -83,11 +79,19 @@ Hot-reloads the frontend on save. Go changes require a restart.
 
 ### Production build
 
+The build pipeline compiles a minimal static ffmpeg/ffprobe (with `hevc_videotoolbox` + `libx265`) and bundles them inside the `.app`. No Homebrew runtime dependency for end users.
+
+**Prerequisites:** `brew install x265` (one-time, for the static build)
+
 ```bash
-wails build
+# 1. Build bundled ffmpeg (one-time, ~5 min)
+make ffmpeg
+
+# 2. Build app + copy + codesign
+make app
 ```
 
-Output: `build/bin/VideoOptim.app`
+Output: `build/bin/VideoOptim.app` (~20 MB, self-contained)
 
 ---
 

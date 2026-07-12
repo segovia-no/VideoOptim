@@ -1,3 +1,6 @@
 build/bin
+build/ffmpeg
+build/ffmpeg-prefix
 node_modules
 frontend/dist
+test.DS_Store

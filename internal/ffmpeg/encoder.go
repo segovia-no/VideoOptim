@@ -2,6 +2,7 @@ package ffmpeg
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -64,6 +65,9 @@ func (d *Detector) Encode(
 
 	cmd := exec.Command(d.FFmpegPath, args...)
 
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, fmt.Errorf("stdout pipe: %w", err)
@@ -114,7 +118,7 @@ func (d *Detector) Encode(
 	case err := <-doneCh:
 		if err != nil {
 			os.Remove(outputPath)
-			return nil, fmt.Errorf("ffmpeg encode: %w", err)
+			return nil, fmt.Errorf("ffmpeg encode: %w\n%s", err, lastLines(stderrBuf.String(), 5))
 		}
 	case <-cancelCh:
 		cmd.Process.Kill()
@@ -144,4 +148,16 @@ func (d *Detector) Encode(
 		OriginalSize: origStat.Size(),
 		OutputSize:   outStat.Size(),
 	}, nil
+}
+
+func lastLines(s string, n int) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ""
+	}
+	lines := strings.Split(s, "\n")
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+	}
+	return strings.Join(lines, "\n")
 }

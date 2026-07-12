@@ -2,11 +2,13 @@ package ffmpeg
 
 import (
 	"errors"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
-var ErrNotFound = errors.New("ffmpeg not found — install with: brew install ffmpeg")
+var ErrNotFound = errors.New("ffmpeg not found — bundle it via `make ffmpeg` or install with: brew install ffmpeg")
 
 type Detector struct {
 	FFmpegPath  string
@@ -14,15 +16,30 @@ type Detector struct {
 }
 
 func Detect() (*Detector, error) {
-	ffmpegPath, err := exec.LookPath("ffmpeg")
-	if err != nil {
+	ffmpegPath := findBin("ffmpeg")
+	if ffmpegPath == "" {
 		return nil, ErrNotFound
 	}
-	ffprobePath, err := exec.LookPath("ffprobe")
-	if err != nil {
+	ffprobePath := findBin("ffprobe")
+	if ffprobePath == "" {
 		return nil, ErrNotFound
 	}
 	return &Detector{FFmpegPath: ffmpegPath, FFprobePath: ffprobePath}, nil
+}
+
+// findBin checks alongside the running executable first (bundled .app),
+// then falls back to PATH.
+func findBin(name string) string {
+	if exe, err := os.Executable(); err == nil {
+		candidate := filepath.Join(filepath.Dir(exe), name)
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	if path, err := exec.LookPath(name); err == nil {
+		return path
+	}
+	return ""
 }
 
 func (d *Detector) Version() string {
