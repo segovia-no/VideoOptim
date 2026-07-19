@@ -37,19 +37,29 @@ func FindPairs(optimizedPaths []string) []Pair {
 }
 
 func originalFor(optimized string) string {
-	base := filepath.Base(optimized)
-	dir := filepath.Dir(optimized)
-	if !strings.HasSuffix(base, "_optimized.mp4") {
-		return ""
-	}
-	stem := strings.TrimSuffix(base, "_optimized.mp4")
-	for _, ext := range []string{"mp4", "MP4", "mov", "MOV", "mkv", "MKV", "avi", "AVI", "webm", "WEBM"} {
-		candidate := filepath.Join(dir, stem+"."+ext)
+	for _, candidate := range candidatePaths(optimized) {
 		if _, err := os.Stat(candidate); err == nil {
 			return candidate
 		}
 	}
 	return ""
+}
+
+// candidatePaths returns the ordered list of potential original file paths for
+// a given optimized path, based purely on string logic (no filesystem access).
+func candidatePaths(optimized string) []string {
+	base := filepath.Base(optimized)
+	dir := filepath.Dir(optimized)
+	if !strings.HasSuffix(base, "_optimized.mp4") {
+		return nil
+	}
+	stem := strings.TrimSuffix(base, "_optimized.mp4")
+	exts := []string{"mp4", "MP4", "mov", "MOV", "mkv", "MKV", "avi", "AVI", "webm", "WEBM"}
+	paths := make([]string, len(exts))
+	for i, ext := range exts {
+		paths[i] = filepath.Join(dir, stem+"."+ext)
+	}
+	return paths
 }
 
 func Run(pairs []Pair) Result {
@@ -67,7 +77,7 @@ func Run(pairs []Pair) Result {
 		}
 
 		if optInfo.Size() < origInfo.Size() {
-			if err := moveToTrash(p.Original); err != nil {
+			if err := MoveToTrash(p.Original); err != nil {
 				r.Errors = append(r.Errors, fmt.Sprintf("trash %s: %v", p.Original, err))
 			} else {
 				r.Moved++
@@ -83,7 +93,7 @@ func Run(pairs []Pair) Result {
 	return r
 }
 
-func moveToTrash(path string) error {
+func MoveToTrash(path string) error {
 	script := fmt.Sprintf(`tell application "Finder" to delete POSIX file %q`, path)
 	return exec.Command("osascript", "-e", script).Run()
 }

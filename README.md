@@ -2,21 +2,21 @@
 
 A macOS video compression app inspired by [ImageOptim](https://imageoptim.com). Drop videos in, get smaller videos out.
 
-It uses a very balanced configuration on ffmpeg that aims to only take advantages of H.265, preserving as much quality as possible. Audio is untouched.
+Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing via drag-and-drop or folder scanning. Audio is untouched.
 
-Uses ffmpeg under the hood with HEVC/H.265 encoding. Supports batch processing via drag-and-drop or folder scanning.
+**[VideoOptim github.io page](https://segovia-no.github.io/VideoOptim/)**
 
 ---
 
 ## Features
 
-- Drag & drop videos or folders
-- HEVC encoding via **libx265** (best ratio) or **VideoToolbox** (hardware accelerated)
-- Real-time progress bar with elapsed time
+- Drag & drop videos or folders onto the window
+- HEVC encoding via **libx265** (best compression) or **VideoToolbox** (hardware accelerated)
+- Pause, resume, and stop the queue at any time
+- Real-time progress bar with elapsed time per file
 - No-gain discard — if the output is larger, the original is kept (configurable)
 - Cleanup button — moves originals to Trash after reviewing results
 - Supports MP4, MOV, MKV, AVI, WebM
-- Dark and light mode (follows system)
 
 ## Installation
 
@@ -39,7 +39,8 @@ xattr -cr /Applications/VideoOptim.app
 1. Launch VideoOptim
 2. Drop video files or folders onto the window (or use **Add Files…** / **Add Folder…**)
 3. Compression runs automatically, one file at a time
-4. When done, click **Clean up originals** to move source files to Trash
+4. Use the **Pause / Resume / Stop** controls while the queue is running
+5. When done, click **Clean up originals** to move source files to Trash
 
 Output files are saved alongside the originals with an `_optimized.mp4` suffix:
 ```
@@ -67,7 +68,7 @@ Open via the gear icon or **VideoOptim → Settings** (⌘,).
 
 ### Prerequisites
 
-- [Go](https://go.dev) 1.21+
+- [Go](https://go.dev) 1.26+
 - [Wails CLI](https://wails.io) v2
 - Node.js 22+ (via [nvm](https://github.com/nvm-sh/nvm))
 
@@ -104,28 +105,49 @@ make dmg
 
 Output: `build/bin/VideoOptim.dmg` (~6.5 MB), `build/bin/VideoOptim.app` (~14 MB, self-contained)
 
+### Testing
+
+```bash
+# Go tests
+go test ./...
+
+# JS tests
+cd frontend && npm test
+```
+
 ---
 
 ## Project Structure
 
 ```
 VideoOptim/
-├── main.go                  # Wails app entry + window options
-├── app.go                   # Go methods exposed to the frontend
-├── Makefile                 # ffmpeg build + app bundle + DMG
+├── main.go                    # Wails entry + window options
+├── app.go                     # Go methods exposed to the frontend (IPC)
+├── Makefile                   # ffmpeg build + app bundle + DMG
 ├── internal/
-│   ├── ffmpeg/              # Binary detection, video probe, encoder
-│   ├── queue/               # Sequential job runner
-│   ├── cleanup/             # Move originals to Trash
-│   └── settings/            # User preferences (JSON)
+│   ├── ffmpeg/                # Binary detection, video probe, encoder
+│   ├── queue/                 # Sequential job runner with pause/resume/stop
+│   ├── cleanup/               # Move originals to Trash
+│   └── settings/              # User preferences (JSON)
 └── frontend/
     └── src/
-        ├── App.svelte        # Root layout, event wiring
-        ├── stores/queue.js   # Shared job state
-        └── components/       # FileList, FileRow, Settings
+        ├── App.svelte          # Root layout, toolbar, modals
+        ├── stores/queue.js     # Shared job state + derived stats
+        ├── utils/
+        │   ├── events.js       # Wails event subscriptions
+        │   └── format.js       # formatBytes utility
+        └── components/
+            ├── DragDropZone.svelte  # Drag-and-drop wrapper + overlay
+            ├── FileList.svelte      # Scrollable job list with header
+            ├── FileRow.svelte       # Per-job row with context menu
+            └── Settings.svelte     # Settings modal
 ```
 
 ---
+
+## Contributing
+
+Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
 
 ## License
 

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting Started — VideoOptim</title>
+<meta name="description" content="How to install and use VideoOptim — a free macOS app for H.265 video compression. Download, first launch, adding files, and cleanup.">
+<meta name="keywords" content="VideoOptim getting started, install VideoOptim, H.265 video compression macOS, HEVC encoder tutorial">
+<meta name="author" content="Diego Segovia">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://segovia-no.github.io/VideoOptim/getting-started.html">
+<link rel="icon" type="image/png" href="assets/appicon.png">
+<link rel="apple-touch-icon" href="assets/appicon.png">
+
+<!-- Open Graph -->
+<meta property="og:type"        content="article">
+<meta property="og:url"         content="https://segovia-no.github.io/VideoOptim/getting-started.html">
+<meta property="og:title"       content="Getting Started — VideoOptim">
+<meta property="og:description" content="How to install and use VideoOptim for H.265 video compression on macOS.">
+<meta property="og:image"       content="https://segovia-no.github.io/VideoOptim/assets/VideoOptimScreenshot.webp">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --bg:   #0a0a0b;
+  --bg-2: #121214;
+  --bg-3: #1a1a1d;
+  --line:   #26262a;
+  --line-2: #333338;
+  --ink:   #ededef;
+  --ink-2: #a4a4ac;
+  --ink-3: #66666d;
+  --ink-4: #3f3f45;
+  --accent:      #E55A01;
+  --accent-dim:  rgba(229,90,1,.15);
+  --accent-line: rgba(229,90,1,.38);
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --maxw: 760px;
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  8px;
+  --radius-xl:  10px;
+  --radius-2xl: 12px;
+  --grid-size: 48px;
+  --grid-line: rgba(255,255,255,.022);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: var(--font-sans);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--ink); }
+
+.grid-bg {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+/* ── Nav ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 56px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,11,.85);
+  backdrop-filter: blur(12px);
+  z-index: 5;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px var(--font-sans);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.logo-icon { width: 24px; height: 24px; border-radius: 6px; }
+
+.navlinks {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navlinks a {
+  font: 500 12.5px var(--font-mono);
+  color: var(--ink-3);
+  letter-spacing: .02em;
+}
+
+.navlinks a:hover, .navlinks a.active { color: var(--ink); }
+
+/* ── Article layout ── */
+.article-wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 64px 32px 96px;
+}
+
+/* ── Breadcrumb ── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 400 12px var(--font-mono);
+  color: var(--ink-3);
+  margin-bottom: 40px;
+}
+
+.breadcrumb a { color: var(--ink-3); }
+.breadcrumb a:hover { color: var(--ink); }
+.breadcrumb-sep { color: var(--ink-4); }
+
+/* ── Page header ── */
+.page-eyebrow {
+  font: 500 11px var(--font-mono);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin: 0 0 12px;
+}
+
+.page-title {
+  font: 700 36px var(--font-sans);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.page-lead {
+  font: 400 17px/1.65 var(--font-sans);
+  color: var(--ink-2);
+  margin: 0 0 56px;
+  max-width: 560px;
+}
+
+/* ── Divider ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 48px 0;
+}
+
+/* ── Section headings ── */
+.article-wrap h2 {
+  font: 600 20px var(--font-sans);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+}
+
+.article-wrap h3 {
+  font: 600 14px var(--font-sans);
+  color: var(--ink);
+  margin: 24px 0 8px;
+}
+
+/* ── Body text ── */
+.article-wrap p {
+  font: 400 15px/1.7 var(--font-sans);
+  color: var(--ink-2);
+  margin: 0 0 16px;
+}
+
+/* ── Steps ── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.step {
+  display: flex;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.step:last-child { border-bottom: none; }
+
+.step-n {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font: 700 11px var(--font-mono);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.step-body h3 { font: 600 14px var(--font-sans); color: var(--ink); margin: 0 0 4px; }
+.step-body p  { font: 400 13px/1.6 var(--font-sans); color: var(--ink-2); margin: 0; }
+
+/* ── Callout / note ── */
+.callout {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin: 24px 0;
+}
+
+.callout-icon { font-size: 15px; flex-shrink: 0; line-height: 1.6; }
+.callout p { font: 400 13px/1.65 var(--font-sans); color: var(--ink-2); margin: 0; }
+
+/* ── Code ── */
+.cmd-block {
+  font: 400 13px var(--font-mono);
+  color: var(--ink);
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  color: var(--ink-2);
+}
+
+/* ── Settings table ── */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font: 400 13px var(--font-sans);
+  margin: 16px 0;
+}
+
+.settings-table th {
+  background: var(--bg-3);
+  color: var(--ink-3);
+  font: 500 10.5px var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-table td {
+  padding: 10px 14px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.settings-table tr:last-child td { border-bottom: none; }
+.settings-table td:first-child { color: var(--ink); font-weight: 500; }
+.settings-table tr:nth-child(even) td { background: rgba(255,255,255,.015); }
+
+/* ── Next steps ── */
+.next-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.next-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-2);
+  text-decoration: none;
+  transition: background .1s ease;
+}
+
+.next-step:hover { background: var(--bg-3); }
+.next-step-label { font: 500 14px var(--font-sans); color: var(--ink); }
+.next-step-desc  { font: 400 12px var(--font-sans); color: var(--ink-3); margin-top: 2px; }
+.next-step-arrow { color: var(--ink-4); font-size: 16px; }
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 28px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+footer p { font: 400 12px var(--font-mono); color: var(--ink-3); margin: 0; }
+footer a { color: var(--ink-3); }
+footer a:hover { color: var(--ink); }
+
+@media (max-width: 640px) {
+  .nav { padding: 0 20px; }
+  .article-wrap { padding: 40px 20px 72px; }
+  .page-title { font-size: 28px; }
+}
+</style>
+</head>
+<body class="grid-bg">
+
+<nav class="nav">
+  <a href="index.html" class="logo">
+    <img class="logo-icon" src="assets/appicon.png" alt="">VideoOptim
+  </a>
+  <ul class="navlinks">
+    <li><a href="index.html#features">features</a></li>
+    <li><a href="getting-started.html" class="active">getting started</a></li>
+    <li><a href="https://github.com/segovia-no/VideoOptim">github ↗</a></li>
+  </ul>
+</nav>
+
+<div class="article-wrap">
+
+  <div class="breadcrumb">
+    <a href="index.html">VideoOptim</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Getting Started</span>
+  </div>
+
+  <p class="page-eyebrow">guide</p>
+  <h1 class="page-title">Getting Started</h1>
+  <p class="page-lead">Download, install, and compress your first video in under two minutes.</p>
+
+  <!-- 1. Download -->
+  <h2>1. Download</h2>
+  <p>Grab the latest <code>.dmg</code> from the <a href="https://github.com/segovia-no/VideoOptim/releases/latest">Releases page</a>. VideoOptim runs on macOS 12 or later, Apple Silicon only (M1 and newer).</p>
+  <p>Open the downloaded <code>.dmg</code>, drag <strong>VideoOptim</strong> into your <strong>Applications</strong> folder, then eject the disk image.</p>
+
+  <hr class="divider">
+
+  <!-- 2. First launch -->
+  <h2>2. First launch</h2>
+  <p>VideoOptim is not notarized, so macOS Gatekeeper may block it on first open. There are two ways to bypass this:</p>
+
+  <h3>Option A — Right-click to open</h3>
+  <p>In Finder, right-click (or Control-click) <strong>VideoOptim.app</strong> and choose <strong>Open</strong>. macOS will ask for confirmation once; after that it opens normally.</p>
+
+  <h3>Option B — Remove the quarantine flag</h3>
+  <p>Open Terminal and run:</p>
+  <div class="cmd-block">xattr -cr /Applications/VideoOptim.app</div>
+  <p>Then launch the app normally from Launchpad or Finder.</p>
+
+  <div class="callout">
+    <span class="callout-icon">ℹ</span>
+    <p>You only need to do this once. After the first successful launch, macOS remembers your choice and opens VideoOptim without prompting.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 3. Add videos -->
+  <h2>3. Add videos</h2>
+  <p>VideoOptim accepts files in three ways:</p>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-n">A</span>
+      <div class="step-body">
+        <h3>Drag and drop</h3>
+        <p>Drag video files or an entire folder onto the VideoOptim window. A blue overlay appears while dragging — release to add the files.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">B</span>
+      <div class="step-body">
+        <h3>File picker</h3>
+        <p>Click <strong>Choose files…</strong> in the empty state, or <strong>Add files…</strong> from the toolbar when the list already has jobs.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">C</span>
+      <div class="step-body">
+        <h3>Folder picker</h3>
+        <p>Click <strong>Choose folder…</strong> to add all supported video files inside a folder (and subfolders). Useful for bulk batch jobs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-icon">ℹ</span>
+    <p>Supported formats: <strong>MP4, MOV, MKV, AVI, WebM</strong>. Files already encoded in H.265 (HEVC) are skipped automatically — re-encoding them would make them larger, not smaller.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 4. Compression -->
+  <h2>4. Compression runs automatically</h2>
+  <p>Once files are added, VideoOptim starts encoding immediately — one file at a time. Each row shows a live progress bar, elapsed time, and the current encode speed.</p>
+  <p>You can control the queue at any time using the control bar that appears while encoding:</p>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-n">⏸</span>
+      <div class="step-body">
+        <h3>Pause</h3>
+        <p>Suspends the current ffmpeg process. The file stays in place, no data is lost. Resume picks up exactly where it left off.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">▶</span>
+      <div class="step-body">
+        <h3>Resume</h3>
+        <p>Continues the paused encode.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">⏹</span>
+      <div class="step-body">
+        <h3>Stop</h3>
+        <p>Cancels the current file and clears all waiting jobs. Any already-completed files remain in the list.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 5. Output files -->
+  <h2>5. Output files</h2>
+  <p>Compressed files are saved in the <strong>same folder as the original</strong>, with an <code>_optimized.mp4</code> suffix added to the filename:</p>
+  <div class="cmd-block">holiday.mov  →  holiday_optimized.mp4
+interview.mkv  →  interview_optimized.mp4</div>
+  <p>The original file is <strong>never modified or deleted</strong> automatically. VideoOptim keeps both until you decide what to do.</p>
+
+  <div class="callout">
+    <span class="callout-icon">ℹ</span>
+    <p><strong>No gain discard</strong> — if the compressed output ends up larger than the original (common with already-compressed or very short clips), VideoOptim discards the output and keeps the original. You'll see "No gain" in the savings column. This behaviour can be turned off in Settings.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 6. Review and clean up -->
+  <h2>6. Review and clean up</h2>
+  <p>When encoding finishes, the summary bar shows total space saved across all files. Review the results — right-click any row to reveal a file in Finder or open it.</p>
+  <p>When you're happy with the results, click <strong>Clean up originals</strong> in the toolbar. This moves all original files that have a smaller compressed version to the macOS Trash. Nothing is permanently deleted — you can restore them from Trash if needed.</p>
+
+  <hr class="divider">
+
+  <!-- 7. Settings -->
+  <h2>7. Settings</h2>
+  <p>Open Settings with <strong>⌘,</strong> or the gear icon in the toolbar.</p>
+
+  <table class="settings-table">
+    <thead>
+      <tr>
+        <th>Setting</th>
+        <th>Default</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Encoder</td>
+        <td>VideoToolbox</td>
+        <td>Hardware-accelerated HEVC. Fastest option, uses Apple Silicon media engine.</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>libx265</td>
+        <td>Software encoder. Slower, but produces smaller files at the same visual quality.</td>
+      </tr>
+      <tr>
+        <td>CRF</td>
+        <td>24</td>
+        <td>Quality level for libx265 only. Lower = better quality, larger file. Range 18–35.</td>
+      </tr>
+      <tr>
+        <td>Keep audio</td>
+        <td>On</td>
+        <td>Copies the audio track without re-encoding. Turning this off strips audio entirely.</td>
+      </tr>
+      <tr>
+        <td>Discard if no gain</td>
+        <td>On</td>
+        <td>Deletes the output and keeps the original when the compressed file is larger.</td>
+      </tr>
+      <tr>
+        <td>Accepted formats</td>
+        <td>All</td>
+        <td>Toggle which file extensions are added when dropping folders.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<footer>
+  <p>MIT license · built by <a href="https://github.com/segovia-no">@segovia-no</a> · inspired by <a href="https://imageoptim.com">ImageOptim</a></p>
+  <p><a href="index.html">home</a> · <a href="https://github.com/segovia-no/VideoOptim">github</a> · <a href="https://github.com/segovia-no/VideoOptim/issues">issues</a> · <a href="https://github.com/segovia-no/VideoOptim/releases">releases</a></p>
+</footer>
+
+</body>
+</html>

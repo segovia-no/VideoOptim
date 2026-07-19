@@ -4,7 +4,37 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VideoOptim — H.265 video compression for macOS</title>
-<meta name="description" content="A macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out.">
+<meta name="description" content="A free macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out. Supports MP4, MOV, MKV, AVI and WebM.">
+<meta name="keywords" content="video compression, H.265, HEVC, ffmpeg, macOS, Apple Silicon, batch video encoder, libx265, VideoToolbox">
+<meta name="author" content="Diego Segovia">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://segovia-no.github.io/VideoOptim/">
+<link rel="icon" type="image/png" href="assets/appicon.png">
+<link rel="apple-touch-icon" href="assets/appicon.png">
+
+<!-- Open Graph -->
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://segovia-no.github.io/VideoOptim/">
+<meta property="og:title"       content="VideoOptim — H.265 video compression for macOS">
+<meta property="og:description" content="A free macOS app that re-encodes videos to H.265 using ffmpeg. Drop files in, get smaller files out.">
+<meta property="og:image"       content="https://segovia-no.github.io/VideoOptim/assets/VideoOptimScreenshot.webp">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "VideoOptim",
+  "operatingSystem": "macOS",
+  "applicationCategory": "MultimediaApplication",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "A macOS app that re-encodes videos to H.265 using ffmpeg. Supports MP4, MOV, MKV, AVI and WebM.",
+  "url": "https://segovia-no.github.io/VideoOptim/",
+  "downloadUrl": "https://github.com/segovia-no/VideoOptim/releases/latest",
+  "author": { "@type": "Person", "name": "Diego Segovia" }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -111,7 +141,7 @@ a:hover { color: var(--ink); }
   text-decoration: none;
 }
 
-.logo-glyph { font-family: var(--font-mono); font-size: 18px; color: var(--accent); }
+.logo-icon { width: 24px; height: 24px; border-radius: 6px; }
 
 .navlinks {
   display: flex;
@@ -221,7 +251,7 @@ h2 {
 /* ── Hero ── */
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
+  grid-template-columns: 1fr 1.6fr;
   gap: 48px;
   align-items: center;
   padding-top: 64px;
@@ -237,7 +267,7 @@ h2 {
   margin: 0;
 }
 
-.hero-img { display: block; width: 100%; height: auto; border-radius: var(--radius-xl); border: 1px solid var(--line); }
+.hero-img { display: block; width: 100%; height: auto; border-radius: var(--radius-xl); }
 
 /* ── Stat strip ── */
 .stat-strip {
@@ -364,6 +394,58 @@ h2 {
   border-top: 1px solid var(--line);
 }
 
+.about-section {
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.about-card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-card-label {
+  font: 500 10.5px var(--font-mono);
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.about-card-value {
+  font: 600 22px var(--font-sans);
+  color: var(--ink);
+  margin: 2px 0 4px;
+}
+
+.about-card-body {
+  font: 400 12.5px/1.6 var(--font-sans);
+  color: var(--ink-2);
+  margin: 0 0 10px;
+  flex: 1;
+}
+
+.about-card-link {
+  font: 500 11.5px var(--font-mono);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.about-card-link:hover { text-decoration: underline; }
+
 .gatekeeper-panel {
   display: inline-block;
   text-align: left;
@@ -444,17 +526,17 @@ footer a:hover { color: var(--ink); }
 
 <nav class="nav">
   <a href="#" class="logo">
-    <span class="logo-glyph">⇣</span>VideoOptim
+    <img class="logo-icon" src="assets/appicon.png" alt="">VideoOptim
   </a>
   <ul class="navlinks">
-    <li><a href="#features">features</a></li>
-    <li><a href="#how">how it works</a></li>
+    <li><a href="#home">home</a></li>
+    <li><a href="getting-started.html">getting started</a></li>
     <li><a href="https://github.com/segovia-no/VideoOptim">github ↗</a></li>
   </ul>
 </nav>
 
 <!-- Hero -->
-<div class="section hero">
+<div class="section hero" id="home">
   <div>
     <div class="eyebrow-row">
       <span class="eyebrow">macOS · H.265 · ffmpeg</span>
@@ -469,7 +551,7 @@ footer a:hover { color: var(--ink); }
     </div>
     <p class="hero-meta">macOS 12+ · apple silicon · MIT license</p>
   </div>
-  <img class="hero-img" src="assets/VideoOptimScreenshot.png" alt="VideoOptim app window showing the batch transcode queue">
+  <img class="hero-img" src="assets/VideoOptimScreenshot.webp" alt="VideoOptim app window showing the batch transcode queue">
 </div>
 
 <!-- Stat strip -->
@@ -477,7 +559,7 @@ footer a:hover { color: var(--ink); }
   <div class="stat-grid">
     <div class="stat-card">
       <span class="stat-label">App size</span>
-      <span class="stat-value">~15 MB</span>
+      <span class="stat-value">~14 MB</span>
       <span class="stat-sub">single binary, no installer</span>
     </div>
     <div class="stat-card">
@@ -589,6 +671,38 @@ footer a:hover { color: var(--ink); }
     <div class="gatekeeper-body">
       macOS will likely block the app on first launch since it's not notarized. Right-click → Open to bypass, or run:
       <div class="cmd-block">xattr -cr /Applications/VideoOptim.app</div>
+    </div>
+  </div>
+</div>
+
+<!-- About -->
+<div class="section about-section">
+  <div class="eyebrow-row" style="justify-content:center;">
+    <span class="eyebrow">about</span>
+  </div>
+  <h2 style="text-align:center;">open source &amp; free</h2>
+  <p class="body-text" style="text-align:center;max-width:480px;margin:0 auto 32px;">
+    VideoOptim is released under the <strong>MIT license</strong>. Source code is available on
+    <a href="https://github.com/segovia-no/VideoOptim">GitHub</a>.
+  </p>
+  <div class="about-grid">
+    <div class="about-card">
+      <span class="about-card-label">License</span>
+      <span class="about-card-value">MIT</span>
+      <p class="about-card-body">Free to use, modify, and distribute. No attribution required.</p>
+      <a class="about-card-link" href="https://github.com/segovia-no/VideoOptim/blob/main/LICENSE">View license ↗</a>
+    </div>
+    <div class="about-card">
+      <span class="about-card-label">Source code</span>
+      <span class="about-card-value">GitHub</span>
+      <p class="about-card-body">Pull requests welcome. Built with Go, Wails, and Svelte.</p>
+      <a class="about-card-link" href="https://github.com/segovia-no/VideoOptim">segovia-no/VideoOptim ↗</a>
+    </div>
+    <div class="about-card">
+      <span class="about-card-label">FFmpeg</span>
+      <span class="about-card-value">v7.1.1</span>
+      <p class="about-card-body">VideoOptim bundles FFmpeg v7.1.1, compiled with libx265 and therefore licensed under the GPL v2+. FFmpeg is a trademark of Fabrice Bellard.</p>
+      <a class="about-card-link" href="https://ffmpeg.org/legal.html">ffmpeg.org/legal ↗</a>
     </div>
   </div>
 </div>

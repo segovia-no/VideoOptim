@@ -26,8 +26,8 @@ export function IsFFmpegAvailable() {
   return window['go']['main']['App']['IsFFmpegAvailable']();
 }
 
-export function MoveToTrash(arg1) {
-  return window['go']['main']['App']['MoveToTrash'](arg1);
+export function MoveToTrash(arg1, arg2) {
+  return window['go']['main']['App']['MoveToTrash'](arg1, arg2);
 }
 
 export function OpenFile(arg1) {

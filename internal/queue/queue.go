@@ -108,6 +108,17 @@ func (q *Queue) Jobs() []*Job {
 	return out
 }
 
+func (q *Queue) MarkOriginalDeleted(id string) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for _, j := range q.jobs {
+		if j.ID == id {
+			j.OriginalDeleted = true
+			return
+		}
+	}
+}
+
 func (q *Queue) CancelCurrent() {
 	q.mu.Lock()
 	if q.cancelCurrent != nil {
@@ -209,11 +220,7 @@ func (q *Queue) nextWaiting() *Job {
 
 func (q *Queue) process(job *Job) {
 	cancelCh := make(chan struct{})
-	q.mu.Lock()
-	job.Status = StatusProcessing
-	q.cancelCurrent = cancelCh
-	q.mu.Unlock()
-
+	q.beginJob(job, cancelCh)
 	q.onStart(job.ID)
 
 	s := q.getSettings()
@@ -225,26 +232,58 @@ func (q *Queue) process(job *Job) {
 	}
 
 	if info.Codec == "hevc" {
-		origStat, statErr := os.Stat(job.Path)
-		var origSize int64
-		if statErr == nil {
-			origSize = origStat.Size()
-		}
-		q.mu.Lock()
-		job.Status = StatusSkipped
-		job.SkipReason = "hevc"
-		job.OriginalSize = origSize
-		job.Progress = 100
-		q.mu.Unlock()
-		q.onComplete(CompleteEvent{
-			ID:         job.ID,
-			Result:     &ffmpeg.EncodeResult{OriginalSize: origSize},
-			SkipReason: "hevc",
-		})
+		q.skipHevc(job)
 		return
 	}
 
-	result, err := q.detector.Encode(
+	result, err := q.runEncode(job, info, s, cancelCh)
+
+	q.mu.Lock()
+	q.currentPid = 0
+	q.mu.Unlock()
+
+	if err != nil {
+		if err.Error() == "cancelled" {
+			q.mu.Lock()
+			job.Status = StatusCancelled
+			q.mu.Unlock()
+			return
+		}
+		q.setError(job, err)
+		return
+	}
+
+	q.applyResult(job, result)
+	q.onComplete(CompleteEvent{ID: job.ID, Result: result})
+}
+
+func (q *Queue) beginJob(job *Job, cancelCh chan struct{}) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	job.Status = StatusProcessing
+	q.cancelCurrent = cancelCh
+}
+
+func (q *Queue) skipHevc(job *Job) {
+	var origSize int64
+	if fi, err := os.Stat(job.Path); err == nil {
+		origSize = fi.Size()
+	}
+	q.mu.Lock()
+	job.Status = StatusSkipped
+	job.SkipReason = "hevc"
+	job.OriginalSize = origSize
+	job.Progress = 100
+	q.mu.Unlock()
+	q.onComplete(CompleteEvent{
+		ID:         job.ID,
+		Result:     &ffmpeg.EncodeResult{OriginalSize: origSize},
+		SkipReason: "hevc",
+	})
+}
+
+func (q *Queue) runEncode(job *Job, info *ffmpeg.VideoInfo, s settings.Settings, cancelCh chan struct{}) (*ffmpeg.EncodeResult, error) {
+	return q.detector.Encode(
 		job.Path,
 		info,
 		s,
@@ -263,37 +302,22 @@ func (q *Queue) process(job *Job) {
 		},
 		cancelCh,
 	)
-	q.mu.Lock()
-	q.currentPid = 0
-	q.mu.Unlock()
+}
 
-	if err != nil {
-		if err.Error() == "cancelled" {
-			q.mu.Lock()
-			job.Status = StatusCancelled
-			q.mu.Unlock()
-			return
-		}
-		q.setError(job, err)
-		return
-	}
-
+func (q *Queue) applyResult(job *Job, result *ffmpeg.EncodeResult) {
 	q.mu.Lock()
+	defer q.mu.Unlock()
 	job.OriginalSize = result.OriginalSize
 	job.OutputSize = result.OutputSize
 	job.OutputPath = result.OutputPath
+	job.Progress = 100
 	if result.OutputPath == "" {
 		job.Status = StatusSkipped
 		job.Savings = 0
-		job.Progress = 100
 	} else {
 		job.Status = StatusDone
-		job.Savings = (1 - float64(result.OutputSize)/float64(result.OriginalSize)) * 100
-		job.Progress = 100
+		job.Savings = calcSavings(result.OriginalSize, result.OutputSize)
 	}
-	q.mu.Unlock()
-
-	q.onComplete(CompleteEvent{ID: job.ID, Result: result})
 }
 
 func (q *Queue) setError(job *Job, err error) {
@@ -302,6 +326,13 @@ func (q *Queue) setError(job *Job, err error) {
 	job.Error = err.Error()
 	q.mu.Unlock()
 	q.onError(ErrorEvent{ID: job.ID, Err: err})
+}
+
+func calcSavings(origSize, outSize int64) float64 {
+	if origSize == 0 {
+		return 0
+	}
+	return (1 - float64(outSize)/float64(origSize)) * 100
 }
 
 func FormatDuration(d time.Duration) string {

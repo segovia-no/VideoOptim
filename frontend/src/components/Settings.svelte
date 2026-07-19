@@ -1,5 +1,5 @@
 <script>
-    import { GetSettings, SaveSettings } from '../../wailsjs/go/main/App.js'
+    import { GetSettings, SaveSettings, OpenFolderPicker } from '../../wailsjs/go/main/App.js'
 
     let { onClose } = $props()
 
@@ -9,6 +9,7 @@
         keepAudio: true,
         discardIfNoGain: true,
         acceptedFormats: ['mp4', 'mov', 'mkv', 'avi', 'webm'],
+        outputFolder: '',
     })
 
     const allFormats = ['mp4', 'mov', 'mkv', 'avi', 'webm']
@@ -25,6 +26,11 @@
         }
     }
 
+    async function pickOutputFolder() {
+        const path = await OpenFolderPicker()
+        if (path) form.outputFolder = path
+    }
+
     async function save() {
         await SaveSettings(form)
         onClose()
@@ -34,20 +40,22 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="overlay" onclick={onClose}>
     <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <div class="modal modal-shell" onclick={(e) => e.stopPropagation()}>
         <h2>Settings</h2>
 
         <section>
             <span class="label">Encoder</span>
-            <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-            <div class="radio-card" class:active={form.encoder === 'hevc_videotoolbox'} onclick={() => form.encoder = 'hevc_videotoolbox'}>
-                <strong>VideoToolbox HEVC</strong>
-                <small>Hardware accelerated, much faster</small>
-            </div>
-            <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-            <div class="radio-card" class:active={form.encoder === 'libx265'} onclick={() => form.encoder = 'libx265'}>
-                <strong>libx265</strong>
-                <small>Best compression, slower (software)</small>
+            <div class="radio-group">
+                <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+                <div class="radio-card" class:active={form.encoder === 'hevc_videotoolbox'} onclick={() => form.encoder = 'hevc_videotoolbox'}>
+                    <strong>VideoToolbox HEVC</strong>
+                    <small>Hardware accelerated, much faster</small>
+                </div>
+                <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+                <div class="radio-card" class:active={form.encoder === 'libx265'} onclick={() => form.encoder = 'libx265'}>
+                    <strong>libx265</strong>
+                    <small>Best compression, slower (software)</small>
+                </div>
             </div>
         </section>
 
@@ -77,6 +85,22 @@
                 </span>
                 <input type="checkbox" bind:checked={form.discardIfNoGain} />
             </label>
+        </section>
+
+        <section>
+            <span class="label">Output location</span>
+            <div class="radio-group">
+                <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+                <div class="radio-card" class:active={!form.outputFolder} onclick={() => form.outputFolder = ''}>
+                    <strong>Next to original</strong>
+                    <small>Save alongside source file</small>
+                </div>
+                <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+                <div class="radio-card radio-card-folder" class:active={!!form.outputFolder} onclick={pickOutputFolder}>
+                    <strong>Custom folder</strong>
+                    <small class:placeholder={!form.outputFolder}>{form.outputFolder || 'Click to choose…'}</small>
+                </div>
+            </div>
         </section>
 
         <section>
@@ -112,12 +136,8 @@
     }
 
     .modal {
-        background: var(--bg-2);
-        border: 1px solid var(--line);
-        border-radius: var(--radius-2xl);
         padding: 24px;
-        width: 400px;
-        box-shadow: var(--shadow-modal);
+        width: 480px;
     }
 
     h2 {
@@ -137,6 +157,12 @@
         margin-bottom: 10px;
     }
 
+    .radio-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
     .radio-card {
         display: flex;
         flex-direction: column;
@@ -146,18 +172,17 @@
         border: 1px solid var(--line);
         background: var(--bg-3);
         cursor: pointer;
-        margin-bottom: 8px;
         transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
     }
 
-    .radio-card:last-of-type { margin-bottom: 0; }
     .radio-card.active {
         border-color: var(--accent-line);
         background: var(--accent-dim);
     }
 
     .radio-card strong { font: 500 13px var(--font-sans); color: var(--ink); }
-    .radio-card small  { font: 400 11px var(--font-sans); color: var(--ink-3); }
+    .radio-card small  { font: 400 11px var(--font-sans); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .radio-card small.placeholder { color: var(--ink-4); font-style: italic; }
 
     .slider {
         width: 100%;

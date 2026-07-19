@@ -26,6 +26,7 @@ type Job struct {
 	Savings      float64   `json:"savings"`
 	Error        string    `json:"error,omitempty"`
 	OutputPath   string    `json:"outputPath,omitempty"`
-	SkipReason   string    `json:"skipReason,omitempty"`
-	AddedAt      time.Time `json:"addedAt"`
+	SkipReason      string    `json:"skipReason,omitempty"`
+	OriginalDeleted bool      `json:"originalDeleted,omitempty"`
+	AddedAt         time.Time `json:"addedAt"`
 }

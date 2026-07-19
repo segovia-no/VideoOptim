@@ -31,3 +31,21 @@ export const hasDone = derived(jobs, $jobs =>
 export const hasActive = derived(jobs, $jobs =>
     $jobs.some(j => j.status === 'waiting' || j.status === 'processing')
 )
+
+export const stats = derived(jobs, $jobs => {
+    const done = $jobs.filter(j => j.status === 'done')
+    const totalOrigBytes = done.reduce((s, j) => s + (j.originalSize || 0), 0)
+    const totalOutBytes  = done.reduce((s, j) => s + (j.outputSize  || 0), 0)
+    return {
+        doneCount:     done.length,
+        skippedCount:  $jobs.filter(j => j.status === 'skipped').length,
+        errorCount:    $jobs.filter(j => j.status === 'error').length,
+        totalOrigBytes,
+        totalOutBytes,
+        reduction: totalOrigBytes > 0 ? (1 - totalOutBytes / totalOrigBytes) * 100 : 0,
+    }
+})
+
+export const showSummary = derived([jobs, hasActive, hasCompleted], ([$jobs, $hasActive, $hasCompleted]) =>
+    !$hasActive && $jobs.length > 0 && $hasCompleted
+)

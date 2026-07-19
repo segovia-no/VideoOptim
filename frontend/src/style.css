@@ -12,6 +12,31 @@ html, body {
 
 button { font-family: var(--font-sans); }
 
+/* ── Global utilities ───────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner {
+    display: inline-block;
+    border: 1.5px solid var(--line-2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+.modal-shell {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-modal);
+}
+
+.mono-label {
+    font: 500 10.5px var(--font-mono);
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
 /* ── Flagpole Design System Tokens ─────────────────────────────────────── */
 :root {
     /* Fonts */

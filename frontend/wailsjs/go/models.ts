@@ -35,6 +35,7 @@ export namespace queue {
 	    error?: string;
 	    outputPath?: string;
 	    skipReason?: string;
+	    originalDeleted?: boolean;
 	    // Go type: time
 	    addedAt: any;
 	
@@ -57,6 +58,7 @@ export namespace queue {
 	        this.error = source["error"];
 	        this.outputPath = source["outputPath"];
 	        this.skipReason = source["skipReason"];
+	        this.originalDeleted = source["originalDeleted"];
 	        this.addedAt = this.convertValues(source["addedAt"], null);
 	    }
 	
@@ -89,6 +91,7 @@ export namespace settings {
 	    keepAudio: boolean;
 	    discardIfNoGain: boolean;
 	    acceptedFormats: string[];
+	    outputFolder?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -101,6 +104,7 @@ export namespace settings {
 	        this.keepAudio = source["keepAudio"];
 	        this.discardIfNoGain = source["discardIfNoGain"];
 	        this.acceptedFormats = source["acceptedFormats"];
+	        this.outputFolder = source["outputFolder"];
 	    }
 	}
 
