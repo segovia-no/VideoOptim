@@ -19,6 +19,7 @@ type Settings struct {
 	KeepAudio       bool     `json:"keepAudio"`
 	DiscardIfNoGain bool     `json:"discardIfNoGain"`
 	AcceptedFormats []string `json:"acceptedFormats"`
+	OutputFolder    string   `json:"outputFolder,omitempty"`
 }
 
 func Default() Settings {

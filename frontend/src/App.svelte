@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte'
     import { Cleanup, ClearCompleted, OpenFilePicker, OpenFolderPicker, AddFiles, PauseQueue, ResumeQueue, StopQueue } from '../wailsjs/go/main/App.js'
+    import { BrowserOpenURL } from '../wailsjs/runtime/runtime.js'
     import FileList from './components/FileList.svelte'
     import Settings from './components/Settings.svelte'
     import DragDropZone from './components/DragDropZone.svelte'
@@ -201,6 +202,13 @@
                 <p class="about-version">Version 0.2.0</p>
                 <p class="about-desc">Video compression for macOS.<br>Powered by ffmpeg + HEVC.</p>
                 <p class="about-author">Diego Segovia @ 2026</p>
+                <div class="about-links">
+                    <button class="about-link" onclick={() => BrowserOpenURL('https://github.com/segovia-no/VideoOptim')}>GitHub ↗</button>
+                    <span class="about-link-sep">·</span>
+                    <button class="about-link" onclick={() => BrowserOpenURL('https://segovia-no.github.io/VideoOptim/')}>Website ↗</button>
+                    <span class="about-link-sep">·</span>
+                    <span class="about-ffmpeg">Bundles FFmpeg v7.1.1 (GPL v2+)</span>
+                </div>
                 <div class="confirm-actions">
                     <button class="confirm-ok" onclick={() => showAbout = false}>OK</button>
                 </div>
@@ -465,6 +473,11 @@
     .about-dialog { text-align: center; width: 280px; padding: 28px 24px 20px; }
     .about-name    { margin: 0 0 4px; font: 700 17px var(--font-sans); color: var(--ink); }
     .about-version, .about-author { margin: 0 0 12px; font: 400 11.5px var(--font-mono); color: var(--ink-3); }
-    .about-desc    { margin: 0 0 20px; font: 400 12.5px/1.6 var(--font-sans); color: var(--ink-2); }
+    .about-desc    { margin: 0 0 12px; font: 400 12.5px/1.6 var(--font-sans); color: var(--ink-2); }
+    .about-links   { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .about-link    { font: 400 11px var(--font-mono); color: var(--accent); text-decoration: none; background: none; border: none; padding: 0; cursor: pointer; }
+    .about-link:hover { text-decoration: underline; }
+    .about-link-sep { font: 400 11px var(--font-mono); color: var(--ink-4); }
+    .about-ffmpeg  { font: 400 11px var(--font-mono); color: var(--ink-3); }
     .about-dialog .confirm-ok { background: var(--accent); }
 </style>

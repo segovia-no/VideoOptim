@@ -40,7 +40,13 @@ func (d *Detector) Encode(
 	onPid func(int),
 	cancelCh <-chan struct{},
 ) (*EncodeResult, error) {
-	outputPath := OutputPath(inputPath)
+	var outputPath string
+	if s.OutputFolder != "" {
+		stem := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+		outputPath = filepath.Join(s.OutputFolder, stem+"_optimized.mp4")
+	} else {
+		outputPath = OutputPath(inputPath)
+	}
 
 	args := []string{
 		"-i", inputPath,

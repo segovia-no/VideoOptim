@@ -91,6 +91,7 @@ export namespace settings {
 	    keepAudio: boolean;
 	    discardIfNoGain: boolean;
 	    acceptedFormats: string[];
+	    outputFolder?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -103,6 +104,7 @@ export namespace settings {
 	        this.keepAudio = source["keepAudio"];
 	        this.discardIfNoGain = source["discardIfNoGain"];
 	        this.acceptedFormats = source["acceptedFormats"];
+	        this.outputFolder = source["outputFolder"];
 	    }
 	}
 
